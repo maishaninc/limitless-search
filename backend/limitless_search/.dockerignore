@@ -1,0 +1,36 @@
+# Git相关
+.git
+.gitignore
+.github
+
+# 文档和其他非必要文件
+README.md
+docs/
+*.md
+LICENSE
+
+# 开发和测试相关
+*_test.go
+*.test
+*.out
+*.prof
+
+# 构建产物
+pansou
+pansou_*
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# 缓存和临时文件
+.DS_Store
+cache/
+tmp/
+.idea/
+.vscode/
+
+# 其他
+Dockerfile
+.dockerignore 
