@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Search, ExternalLink, Lock, AlertCircle, Loader2, Clock, FileText, CheckCircle2, Filter, HardDrive, Magnet, Link as LinkIcon, X, ChevronLeft, ChevronRight, Github } from "lucide-react";
+import { Search, ExternalLink, Lock, AlertCircle, Loader2, Clock, FileText, CheckCircle2, Filter, HardDrive, Magnet, Link as LinkIcon, X, ChevronLeft, ChevronRight, ChevronDown, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Navbar } from "@/components/navbar";
@@ -246,7 +246,6 @@ export default function HomeClient() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiToastProgress, setAiToastProgress] = useState(0);
   const [aiToastCollapsed, setAiToastCollapsed] = useState(false);
-  const [aiToastHover, setAiToastHover] = useState(false);
   const [aiToastRunId, setAiToastRunId] = useState(0);
   const [skipAiNext, setSkipAiNext] = useState(false); // 一键替换后本次搜索不再触发 AI
   const [currentPage, setCurrentPage] = useState(1);
@@ -606,9 +605,8 @@ export default function HomeClient() {
   React.useEffect(() => {
     if (!showAiModal || !aiSuggestion) return;
     setAiToastCollapsed(false);
-    setAiToastHover(false);
     setAiToastProgress(0);
-    const durationMs = 15000;
+    const durationMs = 30000;
     const start = performance.now();
     let rafId = 0;
 
@@ -935,14 +933,14 @@ export default function HomeClient() {
               initial={{ opacity: 0, y: -8, height: 8 }}
               animate={{
                 opacity: 1,
-                y: aiToastCollapsed && !aiToastHover ? 0 : 72,
-                height: aiToastCollapsed && !aiToastHover ? 8 : "auto",
+                y: aiToastCollapsed ? 0 : 72,
+                height: aiToastCollapsed ? 8 : "auto",
               }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.08, ease: "easeOut" }}
-              onMouseEnter={() => setAiToastHover(true)}
-              onMouseLeave={() => setAiToastHover(false)}
-              className="overflow-hidden rounded-2xl bg-white/90 dark:bg-black/85 backdrop-blur-xl shadow-xl border border-neutral-200 dark:border-neutral-800"
+              className={`overflow-hidden rounded-2xl bg-white/90 dark:bg-black/85 backdrop-blur-xl shadow-xl border border-neutral-200 dark:border-neutral-800 ${
+                aiToastCollapsed ? "pointer-events-none" : "pointer-events-auto"
+              }`}
             >
               <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
                 <div
@@ -996,6 +994,17 @@ export default function HomeClient() {
           </div>
         )}
       </AnimatePresence>
+
+      {showAiModal && aiSuggestion && aiToastCollapsed && (
+        <button
+          type="button"
+          onClick={() => setAiToastCollapsed(false)}
+          className="fixed top-16 left-1/2 -translate-x-1/2 translate-y-1/2 z-40 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 dark:bg-black/85 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 shadow-lg hover:text-neutral-900 dark:hover:text-white"
+          aria-label="展开 AI 推荐"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      )}
 
       <AnimatePresence>
         {showSourcePicker && (

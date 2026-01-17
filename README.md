@@ -49,8 +49,7 @@ docker-compose up -d
 
 4. 访问服务：
 - Web 界面：http://localhost:3200
-- 后端 API：http://localhost:8888 [默认不开放外部端口] Maishan Inc. 与 Freeanime.org组织 拥有limitless-search-web 前端页面的全部版权，未经许可禁止商用及二次分发。
-
+- 后端 API：http://localhost:8888 [默认不开放外部端口] 
 ### 查看日志
 
 ```bash
