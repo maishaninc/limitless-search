@@ -43,7 +43,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-4">
           {/* GitHub Button */}
           <a
-            href="https://github.com"
+            href="https://github.com/maishaninc/limitless-search"
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"

@@ -4,9 +4,9 @@ Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freean
 
 ## 🌐 在线访问
 
-**在线体验地址：** [https://search.freeanime.org](https://search.freeanime.org)
+**在线体验地址：** [https://search.freeanime.org](https://search.freeanime.org)  新版本测试地址：[https://search-bate.freeanime.org](https://search-bate.freeanime.org)
 
-> 由 [Freeanime.org](https://freeanime.org) 赞助
+> 由 [Freeanime.org](https://freeanime.org) 赞助 Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用及二次分发。
 
 ## 📸 界面预览
 
@@ -49,7 +49,7 @@ docker-compose up -d
 
 4. 访问服务：
 - Web 界面：http://localhost:3200
-- 后端 API：http://localhost:8888 [默认不开放外部端口]
+- 后端 API：http://localhost:8888 [默认不开放外部端口] Maishan Inc. 与 Freeanime.org组织 拥有limitless-search-web 前端页面的全部版权，未经许可禁止商用及二次分发。
 
 ### 查看日志
 
@@ -120,6 +120,52 @@ HCAPTCHA_SECRET_KEY=your-secret-key
    NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
    HCAPTCHA_SECRET_KEY=your-secret-key
    ```
+
+## 🆕 版本更新
+
+### Docker 部署更新（推荐）
+
+在服务器上更新到最新版本并重新构建：
+
+```bash
+cd limitless-search
+
+git pull
+
+docker-compose down
+
+docker-compose build --no-cache
+
+docker-compose up -d
+```
+
+### 本地开发更新
+
+```bash
+cd limitless-search
+
+git pull
+```
+
+> 如果你修改过本地代码，请先备份或使用 git stash 保存改动。
+
+## 🤖 AI 推荐配置
+
+前端支持 AI 推荐查询功能，可根据搜索结果数量给出原版名称建议。配置文件位于 `web/limitless_search_web/.env`。
+
+```env
+# --- AI 推荐配置 ---
+# 是否启用 AI 推荐（默认 true）
+NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+
+# 触发阈值（结果条数 <= 阈值时触发）
+NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+
+# 是否强制要求先通过人机验证
+NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+```
+
+> 说明：若未配置或设置为 `false`，AI 推荐将不显示。
 
 ## ⚙️ 配置说明
 
@@ -260,13 +306,13 @@ environment:
 ```bash
 curl -X POST http://localhost:8888/api/search \
   -H "Content-Type: application/json" \
-  -d '{"kw": "速度与激情"}'
+  -d '{"kw": "xxxxx"}'
 ```
 
 **GET /api/search**
 
 ```bash
-curl "http://localhost:8888/api/search?kw=速度与激情"
+curl "http://localhost:8888/api/search?kw=xxxxx"
 ```
 
 ### 健康检查
@@ -306,7 +352,7 @@ environment:
 ```
 
 ## 📄 许可证
-
+MIT License
 Maishan Inc. - [免费开源软解协议](https://www.maishanzero.com/license/free-opensource-software-licensing-agreement/)
 
 ## 🔗 相关链接
@@ -317,4 +363,5 @@ Maishan Inc. - [免费开源软解协议](https://www.maishanzero.com/license/fr
 
 ---
 
-基于 [PanSou](https://github.com/fish2018/pansou) 项目开发
+后端 基于 [PanSou](https://github.com/fish2018/pansou) 项目开发 limitless-search-backend 部分。以MIT许可证开源。
+前端 limitless-search-web Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用及二次分发。

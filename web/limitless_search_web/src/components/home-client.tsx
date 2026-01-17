@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Search, ExternalLink, Lock, AlertCircle, Loader2, Clock, FileText, CheckCircle2, Filter, HardDrive, Magnet, Link as LinkIcon, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ExternalLink, Lock, AlertCircle, Loader2, Clock, FileText, CheckCircle2, Filter, HardDrive, Magnet, Link as LinkIcon, X, ChevronLeft, ChevronRight, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Navbar } from "@/components/navbar";
@@ -206,12 +206,23 @@ type ErrorModalState = {
   details?: string;
 };
 
+type AiSuggestion = {
+  best_query?: string;
+  alternates?: string[];
+  reason?: string;
+  original_language?: string;
+  raw?: unknown;
+};
+
 export default function HomeClient() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const CAPTCHA_PROVIDER = (process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER || "none").toLowerCase() as CaptchaProvider;
   const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
   const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
+  const AI_ENABLED = (process.env.NEXT_PUBLIC_AI_SUGGEST_ENABLED ?? "true").toLowerCase() !== "false";
+  const AI_THRESHOLD = Number(process.env.NEXT_PUBLIC_AI_SUGGEST_THRESHOLD ?? 50) || 50;
+  const AI_REQUIRE_CAPTCHA = (process.env.NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA ?? "false").toLowerCase() === "true";
   
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -219,6 +230,9 @@ export default function HomeClient() {
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedDrive, setSelectedDrive] = useState<string>("all");
   const [hasSearched, setHasSearched] = useState(false);
+  const [starProgress, setStarProgress] = useState(0);
+  const [starCollapsed, setStarCollapsed] = useState(false);
+  const [starRunId, setStarRunId] = useState(0);
   const [stats, setStats] = useState<SearchStats | null>(null);
   const [clientInfo, setClientInfo] = useState<ClientInfo>({ ip: "unknown", country: "unknown" });
   const [showCaptchaModal, setShowCaptchaModal] = useState(false);
@@ -226,6 +240,15 @@ export default function HomeClient() {
   const captchaContainerRef = useRef<HTMLDivElement | null>(null);
   const captchaTokenRef = useRef<string | null>(null);
   const [errorModal, setErrorModal] = useState<ErrorModalState | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiToastProgress, setAiToastProgress] = useState(0);
+  const [aiToastCollapsed, setAiToastCollapsed] = useState(false);
+  const [aiToastHover, setAiToastHover] = useState(false);
+  const [aiToastRunId, setAiToastRunId] = useState(0);
+  const [skipAiNext, setSkipAiNext] = useState(false); // 一键替换后本次搜索不再触发 AI
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
   const [showSourcePicker, setShowSourcePicker] = useState(false);
@@ -284,11 +307,17 @@ export default function HomeClient() {
       return;
     }
 
+    // 重置 AI 状态
+    setAiError(null);
+    setAiSuggestion(null);
+    setShowAiModal(false);
+ 
     setLoading(true);
     setResults([]); // Clear previous results on new search
     setErrorModal(null);
     setHasSearched(true);
-
+    setStarRunId((value) => value + 1);
+ 
     try {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -355,13 +384,26 @@ export default function HomeClient() {
         ),
       );
       const latencyMs = performance.now() - started;
+      const totalCount = typeof data?.total === "number" ? data.total : normalized.length;
       setStats({
-        total: typeof data?.total === "number" ? data.total : normalized.length,
+        total: totalCount,
         sources: sources.length,
         latencyMs: Math.round(latencyMs),
         clientIp: clientInfo.ip || undefined,
         country: clientInfo.country || undefined,
       });
+
+      if (skipAiNext) {
+        setSkipAiNext(false);
+      } else if (AI_ENABLED) {
+        const disableAbove = 100;
+        if (totalCount >= disableAbove) {
+          setShowAiModal(false);
+        } else {
+          setShowAiModal(false);
+          void requestAiSuggestion(totalCount);
+        }
+      }
     } catch (err) {
       const rawMessage = err instanceof Error ? err.message : "";
       const translated = interpretErrorMessage(rawMessage);
@@ -369,6 +411,61 @@ export default function HomeClient() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const requestAiSuggestion = async (currentCount: number) => {
+    if (!AI_ENABLED) return;
+    const activeToken = captchaTokenRef.current;
+    if (AI_REQUIRE_CAPTCHA && !activeToken) {
+      setAiError(t.search.suggest.captchaRequired);
+      setShowAiModal(true);
+      return;
+    }
+
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const resp = await fetch("/api/ai-suggest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(activeToken
+            ? { "x-captcha-token": activeToken, "x-captcha-provider": CAPTCHA_PROVIDER }
+            : {}),
+        },
+        body: JSON.stringify({
+          query: query.trim(),
+          language,
+          resultCount: currentCount,
+          captchaToken: activeToken ?? undefined,
+        }),
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || t.search.suggest.failed);
+      }
+
+      const json = (await resp.json()) as { suggestion?: AiSuggestion };
+      setAiSuggestion(json?.suggestion || null);
+      if (json?.suggestion) {
+        setShowAiModal(true);
+        setAiToastRunId((value) => value + 1);
+      }
+    } catch (err) {
+      setShowAiModal(false);
+      setAiError(err instanceof Error ? err.message : t.search.suggest.failed);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const applySuggestionToQuery = (value?: string) => {
+    const next = value || aiSuggestion?.best_query || aiSuggestion?.alternates?.[0];
+    if (!next) return;
+    setQuery(next);
+    setShowAiModal(false);
+    setSkipAiNext(true);
   };
 
   const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -483,6 +580,53 @@ export default function HomeClient() {
     fetchClientInfo();
   }, []);
 
+  React.useEffect(() => {
+    if (!hasSearched) return;
+    setStarCollapsed(false);
+    setStarProgress(0);
+    const durationMs = 10000;
+    const start = performance.now();
+    let rafId = 0;
+
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const pct = Math.min(100, Math.round((elapsed / durationMs) * 100));
+      setStarProgress(pct);
+      if (elapsed < durationMs) {
+        rafId = window.requestAnimationFrame(tick);
+      } else {
+        setStarCollapsed(true);
+      }
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [starRunId, hasSearched]);
+
+  React.useEffect(() => {
+    if (!showAiModal || !aiSuggestion) return;
+    setAiToastCollapsed(false);
+    setAiToastHover(false);
+    setAiToastProgress(0);
+    const durationMs = 15000;
+    const start = performance.now();
+    let rafId = 0;
+
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const pct = Math.min(100, Math.round((elapsed / durationMs) * 100));
+      setAiToastProgress(pct);
+      if (elapsed < durationMs) {
+        rafId = window.requestAnimationFrame(tick);
+      } else {
+        setAiToastCollapsed(true);
+      }
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [aiToastRunId, showAiModal, aiSuggestion]);
+
   const sourceOptions = ["all", ...sources];
   const driveOptions = ["all", ...availableDriveTypes];
 
@@ -570,7 +714,9 @@ export default function HomeClient() {
       const target = Math.min(Math.max(page, 1), totalPages);
       setCurrentPage(target);
       if (!isTop && typeof window !== "undefined") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       }
     };
 
@@ -580,41 +726,41 @@ export default function HomeClient() {
 
     return (
       <div className={`flex flex-col items-center gap-4 ${isTop ? "mb-6" : "mt-6"}`}>
-        {isTop && (
-          <div className="hidden md:flex items-center justify-center gap-2">
+        <div className="hidden md:flex items-center justify-center gap-3">
+          <button
+            onClick={() => goTo(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-sm disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            {t.search.prevPage}
+          </button>
+
+          {pages.map((p) => (
             <button
-              onClick={() => goTo(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-sm disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              key={p}
+              onClick={() => goTo(p)}
+              className={`px-3 py-1.5 rounded-lg border text-sm ${
+                p === currentPage
+                  ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
+                  : "border-neutral-200 dark:border-neutral-800 hover:border-indigo-500"
+              }`}
             >
-              <ChevronLeft className="w-4 h-4" />
+              {p}
             </button>
+          ))}
 
-            {pages.map((p) => (
-              <button
-                key={p}
-                onClick={() => goTo(p)}
-                className={`px-3 py-1.5 rounded-lg border text-sm ${
-                  p === currentPage
-                    ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
-                    : "border-neutral-200 dark:border-neutral-800 hover:border-indigo-500"
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+          <button
+            onClick={() => goTo(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-sm disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            {t.search.nextPage}
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
 
-            <button
-              onClick={() => goTo(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-sm disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        <div className={`${isTop ? "md:hidden" : ""} flex flex-col items-center gap-4 w-full`}>
+        <div className="md:hidden flex flex-col items-center gap-4 w-full">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             {pages.map((p) => (
               <button
@@ -636,14 +782,14 @@ export default function HomeClient() {
               disabled={currentPage === 1}
               className="flex-1 inline-flex items-center justify-center gap-1 px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 text-sm disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
-              <ChevronLeft className="w-4 h-4" /> 上一页
+              <ChevronLeft className="w-4 h-4" /> {t.search.prevPage}
             </button>
             <button
               onClick={() => goTo(currentPage + 1)}
               disabled={currentPage === totalPages}
               className="flex-1 inline-flex items-center justify-center gap-1 px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 text-sm disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
-              下一页 <ChevronRight className="w-4 h-4" />
+              {t.search.nextPage} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -780,6 +926,77 @@ export default function HomeClient() {
         )}
       </AnimatePresence>
 
+
+      <AnimatePresence>
+        {showAiModal && aiSuggestion && (
+          <div className="fixed top-0 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-2xl">
+            <motion.div
+              key="ai-toast"
+              initial={{ opacity: 0, y: -8, height: 8 }}
+              animate={{
+                opacity: 1,
+                y: aiToastCollapsed && !aiToastHover ? 0 : 72,
+                height: aiToastCollapsed && !aiToastHover ? 8 : "auto",
+              }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.08, ease: "easeOut" }}
+              onMouseEnter={() => setAiToastHover(true)}
+              onMouseLeave={() => setAiToastHover(false)}
+              className="overflow-hidden rounded-2xl bg-white/90 dark:bg-black/85 backdrop-blur-xl shadow-xl border border-neutral-200 dark:border-neutral-800"
+            >
+              <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                <div
+                  className="h-full bg-black dark:bg-white transition-[width] duration-200"
+                  style={{ width: `${aiToastProgress}%` }}
+                />
+              </div>
+
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1 text-sm font-semibold text-neutral-900 dark:text-white text-center">
+                    {t.search.suggest.modalTitle}
+                  </div>
+                  <button
+                    onClick={() => setShowAiModal(false)}
+                    className="p-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-neutral-600 dark:text-neutral-300 text-center">{t.search.suggest.modalDesc}</p>
+
+                <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-white/5 p-4 space-y-3">
+                  <div className="space-y-2">
+                    {aiSuggestion.best_query && (
+                      <div className="text-base font-semibold text-neutral-900 dark:text-white">
+                        {t.search.suggest.recommend}: <span className="text-indigo-600 dark:text-indigo-400">{aiSuggestion.best_query}</span>
+                      </div>
+                    )}
+                    {Array.isArray(aiSuggestion.alternates) && aiSuggestion.alternates.length > 0 && (
+                      <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                        {aiSuggestion.alternates.join(" · ")}
+                      </div>
+                    )}
+                    {aiSuggestion.reason && (
+                      <p className="text-xs text-neutral-500 leading-relaxed">{aiSuggestion.reason}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-center gap-3 mt-2 flex-wrap">
+                    <button
+                      onClick={() => applySuggestionToQuery()}
+                      className="min-w-[140px] px-5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {t.search.suggest.apply}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showSourcePicker && (
           <motion.div
@@ -895,7 +1112,7 @@ export default function HomeClient() {
       <Navbar />
       
       <Hero>
-        <form onSubmit={handleSearch} className="relative w-full">
+        <form onSubmit={handleSearch} className="relative w-full" id="search-anchor-inline">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
             <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl flex items-center p-2 border border-neutral-200 dark:border-neutral-800 transition-colors">
@@ -921,6 +1138,7 @@ export default function HomeClient() {
             </div>
           </div>
           
+
           {/* Loading Animation */}
           <AnimatePresence>
             {loading && (
@@ -938,6 +1156,50 @@ export default function HomeClient() {
           
         </form>
       </Hero>
+
+      <AnimatePresence>
+        {hasSearched && !starCollapsed ? (
+          <motion.div
+            key="star-card"
+            className="fixed right-4 bottom-4 z-40 w-[92%] max-w-xs md:w-[320px] rounded-2xl bg-white/90 dark:bg-black/85 backdrop-blur-xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-4"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12, scale: 0.98 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="text-sm font-semibold text-neutral-900 dark:text-white">{t.search.starCallout}</div>
+            <a
+              href="https://github.com/maishaninc/limitless-search"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center justify-center w-full rounded-lg bg-black text-white dark:bg-white dark:text-black text-sm font-semibold px-4 py-2 hover:opacity-90"
+            >
+              {t.search.starCta}
+            </a>
+            <div className="mt-3 h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className="h-full bg-black dark:bg-white transition-[width] duration-200"
+                style={{ width: `${starProgress}%` }}
+              />
+            </div>
+          </motion.div>
+        ) : hasSearched ? (
+          <motion.a
+            key="star-icon"
+            href="https://github.com/maishaninc/limitless-search"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+            className="fixed right-4 bottom-4 z-40 h-12 w-12 rounded-full bg-white/90 dark:bg-black/85 backdrop-blur-xl shadow-xl border border-neutral-200 dark:border-neutral-800 inline-flex items-center justify-center text-neutral-900 dark:text-white"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.25 }}
+          >
+            <Github className="w-5 h-5" />
+          </motion.a>
+        ) : null}
+      </AnimatePresence>
 
       {/* Results Section */}
       <section className="container mx-auto px-4 pb-20">

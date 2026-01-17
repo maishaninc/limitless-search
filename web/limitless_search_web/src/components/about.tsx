@@ -63,7 +63,7 @@ export function About() {
               
               <div className="relative group">
                 <div className="flex items-center justify-between gap-4 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 break-all">
-                  <code className="text-sm md:text-base font-mono text-neutral-600 dark:text-neutral-300">
+                  <code className="text-sm md:text-base font-mono text-neutral-600 dark:text-neutral-300 w-full text-center">
                     {walletAddress}
                   </code>
                   <button

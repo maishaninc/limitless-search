@@ -12,95 +12,112 @@ export const languages: { code: Language; name: string }[] = [
 ];
 
 type Translations = {
-  nav: {
-    community: string;
-    download: string;
-    about: string;
-    improveCommunity: string;
-  };
-  hero: {
-    title: string;
-  };
-    search: {
-      placeholder: string;
-      cta: string;
-      loading: string;
-      emptyQuery: string;
-      errorGeneric: string;
-      resultsCount: string;
-      lastUpdated: string;
-      noResults: string;
-      filterSource: string;
-      allSources: string;
-      selectSource: string;
-      selectDrive: string;
-      apply: string;
-      cancel: string;
-      statsPlatformsLabel: string;
-      statsIpLabel: string;
-      statsCountryLabel: string;
-      statsLatencyLabel: string;
-      statsNotProvided: string;
-      statsMeasuring: string;
-    errors: {
-      title: string;
-      headline: string;
-      verificationMissing: string;
-      backendUnavailable: string;
-      generic: string;
-      detailsLabel: string;
-      close: string;
-    };
-    captcha: {
-      title: string;
-      description: string;
-    };
-  };
-  donate: {
-    title: string;
-    description: string;
-    supportedMethods: string;
-    methodDesc: string;
-    addressNote: string;
-    advantagesTitle: string;
-    advantages: string[];
-  };
-  countdown: {
-    launching: string;
-    days: string;
-    hours: string;
-    minutes: string;
-    seconds: string;
-  };
-  drives: {
-    title: string;
-    baidu: string;
-    aliyun: string;
-    quark: string;
-    tianyi: string;
-    pikpak: string;
-    pan115: string;
-    xunlei: string;
-    uc: string;
-    yidong: string;
-    pan123: string;
-    magnet: string;
-    ed2k: string;
-  };
-  about: {
-    title: string;
-    content: string;
-    contact: string;
-  };
-  footer: {
-    terms: string;
-    privacy: string;
-    security: string;
-    regions: string;
-    cookies: string;
-    doNotShare: string;
-    rights: string;
-  };
+ nav: {
+   community: string;
+   download: string;
+   about: string;
+   improveCommunity: string;
+ };
+ hero: {
+   title: string;
+ };
+ search: {
+   placeholder: string;
+   cta: string;
+   loading: string;
+   emptyQuery: string;
+   errorGeneric: string;
+   resultsCount: string;
+   lastUpdated: string;
+   noResults: string;
+   filterSource: string;
+   allSources: string;
+   selectSource: string;
+   selectDrive: string;
+   apply: string;
+   cancel: string;
+   prevPage: string;
+   nextPage: string;
+   starCallout: string;
+   starCta: string;
+   statsPlatformsLabel: string;
+   statsIpLabel: string;
+   statsCountryLabel: string;
+   statsLatencyLabel: string;
+   statsNotProvided: string;
+   statsMeasuring: string;
+   errors: {
+     title: string;
+     headline: string;
+     verificationMissing: string;
+     backendUnavailable: string;
+     generic: string;
+     detailsLabel: string;
+     close: string;
+   };
+   captcha: {
+     title: string;
+     description: string;
+   };
+   suggest: {
+     modalTitle: string;
+     modalDesc: string;
+     recommend: string;
+     apply: string;
+     search: string;
+     floatingTitle: string;
+     floatingDesc: string;
+     loading: string;
+     failed: string;
+     close: string;
+     captchaRequired: string;
+   };
+ };
+ donate: {
+   title: string;
+   description: string;
+   supportedMethods: string;
+   methodDesc: string;
+   addressNote: string;
+   advantagesTitle: string;
+   advantages: string[];
+ };
+ countdown: {
+   launching: string;
+   days: string;
+   hours: string;
+   minutes: string;
+   seconds: string;
+ };
+ drives: {
+   title: string;
+   baidu: string;
+   aliyun: string;
+   quark: string;
+   tianyi: string;
+   pikpak: string;
+   pan115: string;
+   xunlei: string;
+   uc: string;
+   yidong: string;
+   pan123: string;
+   magnet: string;
+   ed2k: string;
+ };
+ about: {
+   title: string;
+   content: string;
+   contact: string;
+ };
+ footer: {
+   terms: string;
+   privacy: string;
+   security: string;
+   regions: string;
+   cookies: string;
+   doNotShare: string;
+   rights: string;
+ };
 };
 
 const translations: Record<Language, Translations> = {
@@ -129,6 +146,10 @@ const translations: Record<Language, Translations> = {
       selectDrive: "全部类型",
       apply: "确认",
       cancel: "取消",
+      prevPage: "上一页",
+      nextPage: "下一页",
+      starCallout: "如果你觉得 Limitless-search 很好用请给我们一个 star",
+      starCta: "GitHub Star",
       statsPlatformsLabel: "平台来源",
       statsIpLabel: "请求IP",
       statsCountryLabel: "国家/地区",
@@ -147,6 +168,19 @@ const translations: Record<Language, Translations> = {
       captcha: {
         title: "安全验证",
         description: "请完成人机验证以继续搜索",
+      },
+      suggest: {
+        modalTitle: "没有你想要的资源尝试原版名称",
+        modalDesc: "AI 正在为你匹配日文或英文原版名称，点击一键替换后再次搜索。",
+        recommend: "推荐名称",
+        apply: "一键替换",
+        search: "重新搜索",
+        floatingTitle: "没有想要的结果？",
+        floatingDesc: "试试原版名称（AI 推荐）",
+        loading: "AI 正在分析…",
+        failed: "AI 推荐失败，请稍后重试",
+        close: "关闭",
+        captchaRequired: "请完成人机验证后再试 AI 推荐",
       },
     },
     donate: {
@@ -228,6 +262,10 @@ const translations: Record<Language, Translations> = {
       selectDrive: "全部類型",
       apply: "確認",
       cancel: "取消",
+      prevPage: "上一頁",
+      nextPage: "下一頁",
+      starCallout: "如果你覺得 Limitless-search 很好用請給我們一個 star",
+      starCta: "GitHub Star",
       statsPlatformsLabel: "平台來源",
       statsIpLabel: "請求IP",
       statsCountryLabel: "國家/地區",
@@ -246,6 +284,19 @@ const translations: Record<Language, Translations> = {
       captcha: {
         title: "安全驗證",
         description: "請完成人機驗證以繼續搜尋",
+      },
+      suggest: {
+        modalTitle: "結果不足？試試原版名稱",
+        modalDesc: "AI 會推測日文/英文官方名稱，套用後再次搜尋。",
+        recommend: "推薦名稱",
+        apply: "一鍵替換",
+        search: "重新搜尋",
+        floatingTitle: "找不到想要的？",
+        floatingDesc: "試試原版名稱（AI）",
+        loading: "AI 分析中…",
+        failed: "AI 推薦失敗，稍後再試",
+        close: "關閉",
+        captchaRequired: "完成人機驗證後再試 AI 推薦",
       },
     },
     donate: {
@@ -327,6 +378,10 @@ const translations: Record<Language, Translations> = {
       selectDrive: "All Types",
       apply: "Apply",
       cancel: "Cancel",
+      prevPage: "Previous",
+      nextPage: "Next",
+      starCallout: "If Limitless-search helps you, please give us a star",
+      starCta: "GitHub Star",
       statsPlatformsLabel: "Platforms",
       statsIpLabel: "Client IP",
       statsCountryLabel: "Country/Region",
@@ -347,6 +402,19 @@ const translations: Record<Language, Translations> = {
       captcha: {
         title: "Security Verification",
         description: "Please complete the captcha to continue searching",
+      },
+      suggest: {
+        modalTitle: "Not enough results? Try original title",
+        modalDesc: "AI can infer Japanese/English official names. Apply and search again.",
+        recommend: "Recommended",
+        apply: "Apply",
+        search: "Search again",
+        floatingTitle: "Missing the title?",
+        floatingDesc: "Try original name (AI)",
+        loading: "AI thinking…",
+        failed: "AI suggestion failed, retry later",
+        close: "Close",
+        captchaRequired: "Complete captcha before AI suggestion",
       },
     },
     donate: {
@@ -428,6 +496,10 @@ const translations: Record<Language, Translations> = {
       selectDrive: "すべてのタイプ",
       apply: "決定",
       cancel: "キャンセル",
+      prevPage: "前へ",
+      nextPage: "次へ",
+      starCallout: "Limitless-search が役立ったら、スターをお願いします",
+      starCta: "GitHub Star",
       statsPlatformsLabel: "プラットフォーム数",
       statsIpLabel: "リクエストIP",
       statsCountryLabel: "国/地域",
@@ -448,6 +520,19 @@ const translations: Record<Language, Translations> = {
       captcha: {
         title: "セキュリティ認証",
         description: "検索を続けるには認証を完了してください",
+      },
+      suggest: {
+        modalTitle: "結果が少ない？ 原題で検索",
+        modalDesc: "AI が日本語/英語の公式名を推測します。適用して再検索。",
+        recommend: "おすすめ",
+        apply: "適用",
+        search: "再検索",
+        floatingTitle: "欲しい結果がない？",
+        floatingDesc: "原題を試す（AI）",
+        loading: "AI が分析中…",
+        failed: "AI 推薦に失敗しました",
+        close: "閉じる",
+        captchaRequired: "認証後に AI 推薦を再試行してください",
       },
     },
     donate: {
@@ -529,6 +614,10 @@ const translations: Record<Language, Translations> = {
       selectDrive: "Все типы",
       apply: "Применить",
       cancel: "Отмена",
+      prevPage: "Назад",
+      nextPage: "Вперед",
+      starCallout: "Если Limitless-search помогает вам, пожалуйста, поставьте звезду",
+      starCta: "GitHub Star",
       statsPlatformsLabel: "Платформы",
       statsIpLabel: "IP клиента",
       statsCountryLabel: "Страна/регион",
@@ -549,6 +638,19 @@ const translations: Record<Language, Translations> = {
       captcha: {
         title: "Проверка безопасности",
         description: "Пожалуйста, пройдите проверку, чтобы продолжить поиск",
+      },
+      suggest: {
+        modalTitle: "Мало результатов? Попробуйте оригинал",
+        modalDesc: "AI подскажет официальное название на японском/английском. Примените и ищите снова.",
+        recommend: "Рекомендация",
+        apply: "Применить",
+        search: "Искать снова",
+        floatingTitle: "Нет нужного?",
+        floatingDesc: "Попробуйте оригинальное имя (AI)",
+        loading: "AI думает…",
+        failed: "Сбой AI-рекомендации",
+        close: "Закрыть",
+        captchaRequired: "Пройдите капчу перед AI-рекомендацией",
       },
     },
     donate: {
@@ -630,6 +732,10 @@ const translations: Record<Language, Translations> = {
       selectDrive: "Tous les types",
       apply: "Valider",
       cancel: "Annuler",
+      prevPage: "Précédent",
+      nextPage: "Suivant",
+      starCallout: "Si Limitless-search vous aide, merci de nous donner une étoile",
+      starCta: "GitHub Star",
       statsPlatformsLabel: "Plateformes",
       statsIpLabel: "IP de la requête",
       statsCountryLabel: "Pays/Région",
@@ -650,6 +756,19 @@ const translations: Record<Language, Translations> = {
       captcha: {
         title: "Vérification de sécurité",
         description: "Veuillez compléter le captcha pour continuer la recherche",
+      },
+      suggest: {
+        modalTitle: "Pas assez de résultats ? Essaye le titre original",
+        modalDesc: "L’IA peut deviner le nom officiel japonais/anglais. Appliquez puis relancez la recherche.",
+        recommend: "Recommandation",
+        apply: "Appliquer",
+        search: "Relancer",
+        floatingTitle: "Rien de trouvé ?",
+        floatingDesc: "Essayer le nom original (IA)",
+        loading: "IA en réflexion…",
+        failed: "Suggestion IA échouée",
+        close: "Fermer",
+        captchaRequired: "Validez le captcha avant l’IA",
       },
     },
     donate: {
