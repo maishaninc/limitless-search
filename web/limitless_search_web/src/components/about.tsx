@@ -91,10 +91,15 @@ export function About() {
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {t.donate.advantages.map((advantage, index) => {
+                  // 最后一个元素在手机端（2列布局时5个元素）需要居中
+                  const isLastItem = index === t.donate.advantages.length - 1;
+                  const totalItems = t.donate.advantages.length;
+                  const needsCentering = isLastItem && totalItems % 2 === 1;
+                  
                   return (
-                    <div 
-                      key={index} 
-                      className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    <div
+                      key={index}
+                      className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${needsCentering ? 'col-span-2 md:col-span-1 max-w-[calc(50%-0.5rem)] mx-auto md:max-w-none' : ''}`}
                     >
                       <div className="flex-shrink-0 w-12 h-12 relative flex items-center justify-center">
                         {mounted && (

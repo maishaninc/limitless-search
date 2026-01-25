@@ -1,6 +1,8 @@
 # Limitless Search
 
-Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freeanime.org与Maishan Inc开发。 
+**简体中文** | [繁體中文](README_zh-TW.md) | [English](README_en.md) | [日本語](README_ja.md) | [Русский](README_ru.md) | [Français](README_fr.md)
+
+Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freeanime.org与Maishan Inc开发。
 
 ## 🌐 在线访问
 
@@ -10,15 +12,26 @@ Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freean
 
 ## 📸 界面预览
 
-![主页](img/1.jpg)
+<table>
+  <tr>
+    <td><img src="img/1.jpg" alt="主页" width="400"/></td>
+    <td><img src="img/2.jpg" alt="底部" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="img/3.jpg" alt="人机验证页面" width="400"/></td>
+    <td><img src="img/4.jpg" alt="搜索中" width="400"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="img/5.jpg" alt="展示资源" width="400"/></td>
+  </tr>
+</table>
 
-![底部](img/2.jpg)
+## 📋 最近更新
 
-![人机验证页面](img/3.jpg)
-
-![搜索中](img/4.jpg)
-
-![展示资源](img/5.jpg)
+**2026-01-25**
+- 🗑️ 删除插件 javdb
+- 🎨 更新了网站主页排版
+- 🔍 优化了搜索功能
 
 ## 🚀 快速部署
 
@@ -49,7 +62,7 @@ docker-compose up -d
 
 4. 访问服务：
 - Web 界面：http://localhost:3200
-- 后端 API：http://localhost:8888 [默认不开放外部端口] 
+- 后端 API：http://localhost:8888 [默认
 ### 查看日志
 
 ```bash
