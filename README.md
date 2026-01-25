@@ -14,15 +14,34 @@ Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freean
 
 <table>
   <tr>
-    <td><img src="img/1.jpg" alt="主页" width="400"/></td>
-    <td><img src="img/2.jpg" alt="底部" width="400"/></td>
-  </tr>
-  <tr>
-    <td><img src="img/3.jpg" alt="人机验证页面" width="400"/></td>
-    <td><img src="img/4.jpg" alt="搜索中" width="400"/></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><img src="img/5.jpg" alt="展示资源" width="400"/></td>
+    <td width="70%">
+      <table>
+        <tr>
+          <td><img src="img/1.jpg" alt="主页" width="350"/></td>
+          <td><img src="img/2.jpg" alt="底部" width="350"/></td>
+        </tr>
+        <tr>
+          <td><img src="img/3.jpg" alt="人机验证页面" width="350"/></td>
+          <td><img src="img/4.jpg" alt="搜索中" width="350"/></td>
+        </tr>
+        <tr>
+          <td colspan="2" align="center"><img src="img/5.jpg" alt="展示资源" width="350"/></td>
+        </tr>
+      </table>
+    </td>
+    <td width="30%" valign="top">
+      <h3>🌍 多语言支持</h3>
+      <p>已支持以下语言的 <strong>100% 翻译</strong>：</p>
+      <ul>
+        <li>🇨🇳 简体中文</li>
+        <li>🇹🇼 繁體中文</li>
+        <li>🇺🇸 English</li>
+        <li>🇯🇵 日本語</li>
+        <li>🇷🇺 Русский</li>
+        <li>🇫🇷 Français</li>
+      </ul>
+      <p><em>需要更多语言？请提交 <a href="https://github.com/maishaninc/limitless-search/issues">Issues</a></em></p>
+    </td>
   </tr>
 </table>
 

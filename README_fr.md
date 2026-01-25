@@ -14,15 +14,34 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 
 <table>
   <tr>
-    <td><img src="img/1.jpg" alt="Page d'accueil" width="400"/></td>
-    <td><img src="img/2.jpg" alt="Pied de page" width="400"/></td>
-  </tr>
-  <tr>
-    <td><img src="img/3.jpg" alt="Page CAPTCHA" width="400"/></td>
-    <td><img src="img/4.jpg" alt="Recherche en cours" width="400"/></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><img src="img/5.jpg" alt="Affichage des ressources" width="400"/></td>
+    <td width="70%">
+      <table>
+        <tr>
+          <td><img src="img/1.jpg" alt="Page d'accueil" width="350"/></td>
+          <td><img src="img/2.jpg" alt="Pied de page" width="350"/></td>
+        </tr>
+        <tr>
+          <td><img src="img/3.jpg" alt="Page CAPTCHA" width="350"/></td>
+          <td><img src="img/4.jpg" alt="Recherche en cours" width="350"/></td>
+        </tr>
+        <tr>
+          <td colspan="2" align="center"><img src="img/5.jpg" alt="Affichage des ressources" width="350"/></td>
+        </tr>
+      </table>
+    </td>
+    <td width="30%" valign="top">
+      <h3>🌍 Support multilingue</h3>
+      <p><strong>Traduction à 100%</strong> disponible pour :</p>
+      <ul>
+        <li>🇨🇳 简体中文</li>
+        <li>🇹🇼 繁體中文</li>
+        <li>🇺🇸 English</li>
+        <li>🇯🇵 日本語</li>
+        <li>🇷🇺 Русский</li>
+        <li>🇫🇷 Français</li>
+      </ul>
+      <p><em>Besoin d'autres langues ? Soumettez une <a href="https://github.com/maishaninc/limitless-search/issues">Issue</a></em></p>
+    </td>
   </tr>
 </table>
 

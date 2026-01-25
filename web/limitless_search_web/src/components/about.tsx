@@ -99,7 +99,7 @@ export function About() {
                   return (
                     <div
                       key={index}
-                      className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${needsCentering ? 'col-span-2 md:col-span-1 max-w-[calc(50%-0.5rem)] mx-auto md:max-w-none' : ''}`}
+                      className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${needsCentering ? 'col-span-2 md:col-span-1 w-[calc(50%-0.5rem)] justify-self-center md:w-auto' : ''}`}
                     >
                       <div className="flex-shrink-0 w-12 h-12 relative flex items-center justify-center">
                         {mounted && (

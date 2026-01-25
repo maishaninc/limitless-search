@@ -14,15 +14,34 @@ Limitless Search — это высокопроизводительный инс�
 
 <table>
   <tr>
-    <td><img src="img/1.jpg" alt="Главная страница" width="400"/></td>
-    <td><img src="img/2.jpg" alt="Подвал" width="400"/></td>
-  </tr>
-  <tr>
-    <td><img src="img/3.jpg" alt="Страница CAPTCHA" width="400"/></td>
-    <td><img src="img/4.jpg" alt="Поиск" width="400"/></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><img src="img/5.jpg" alt="Отображение ресурсов" width="400"/></td>
+    <td width="70%">
+      <table>
+        <tr>
+          <td><img src="img/1.jpg" alt="Главная страница" width="350"/></td>
+          <td><img src="img/2.jpg" alt="Подвал" width="350"/></td>
+        </tr>
+        <tr>
+          <td><img src="img/3.jpg" alt="Страница CAPTCHA" width="350"/></td>
+          <td><img src="img/4.jpg" alt="Поиск" width="350"/></td>
+        </tr>
+        <tr>
+          <td colspan="2" align="center"><img src="img/5.jpg" alt="Отображение ресурсов" width="350"/></td>
+        </tr>
+      </table>
+    </td>
+    <td width="30%" valign="top">
+      <h3>🌍 Многоязычная поддержка</h3>
+      <p><strong>100% перевод</strong> доступен для:</p>
+      <ul>
+        <li>🇨🇳 简体中文</li>
+        <li>🇹🇼 繁體中文</li>
+        <li>🇺🇸 English</li>
+        <li>🇯🇵 日本語</li>
+        <li>🇷🇺 Русский</li>
+        <li>🇫🇷 Français</li>
+      </ul>
+      <p><em>Нужны другие языки? Создайте <a href="https://github.com/maishaninc/limitless-search/issues">Issue</a></em></p>
+    </td>
   </tr>
 </table>
 

@@ -14,15 +14,34 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 
 <table>
   <tr>
-    <td><img src="img/1.jpg" alt="ホームページ" width="400"/></td>
-    <td><img src="img/2.jpg" alt="フッター" width="400"/></td>
-  </tr>
-  <tr>
-    <td><img src="img/3.jpg" alt="CAPTCHA ページ" width="400"/></td>
-    <td><img src="img/4.jpg" alt="検索中" width="400"/></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><img src="img/5.jpg" alt="リソース表示" width="400"/></td>
+    <td width="70%">
+      <table>
+        <tr>
+          <td><img src="img/1.jpg" alt="ホームページ" width="350"/></td>
+          <td><img src="img/2.jpg" alt="フッター" width="350"/></td>
+        </tr>
+        <tr>
+          <td><img src="img/3.jpg" alt="CAPTCHA ページ" width="350"/></td>
+          <td><img src="img/4.jpg" alt="検索中" width="350"/></td>
+        </tr>
+        <tr>
+          <td colspan="2" align="center"><img src="img/5.jpg" alt="リソース表示" width="350"/></td>
+        </tr>
+      </table>
+    </td>
+    <td width="30%" valign="top">
+      <h3>🌍 多言語サポート</h3>
+      <p>以下の言語で <strong>100% 翻訳</strong> 対応：</p>
+      <ul>
+        <li>🇨🇳 简体中文</li>
+        <li>🇹🇼 繁體中文</li>
+        <li>🇺🇸 English</li>
+        <li>🇯🇵 日本語</li>
+        <li>🇷🇺 Русский</li>
+        <li>🇫🇷 Français</li>
+      </ul>
+      <p><em>他の言語が必要ですか？<a href="https://github.com/maishaninc/limitless-search/issues">Issues</a> を提出してください</em></p>
+    </td>
   </tr>
 </table>
 
