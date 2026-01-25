@@ -7,7 +7,7 @@ import (
 )
 
 // 通用网盘链接匹配正则表达式 - 修改为更精确的匹配模式
-var AllPanLinksPattern = regexp.MustCompile(`(?i)(?:(?:magnet:\?xt=urn:btih:[a-zA-Z0-9]+)|(?:ed2k://\|file\|[^|]+\|\d+\|[A-Fa-f0-9]+\|/?)|(?:https?://(?:(?:[\w.-]+\.)?(?:pan\.(?:baidu|quark)\.cn|(?:www\.)?(?:alipan|aliyundrive)\.com|drive\.uc\.cn|cloud\.189\.cn|caiyun\.139\.com|(?:www\.)?123(?:684|685|912|pan|592)\.(?:com|cn)|115\.com|115cdn\.com|anxia\.com|pan\.xunlei\.com|mypikpak\.com|pan\.pikpak\.com))(?:/[^\s'"<>()]*)?))`)
+var AllPanLinksPattern = regexp.MustCompile(`(?i)(?:(?:magnet:\?xt=urn:btih:[a-zA-Z0-9]+)|(?:ed2k://\|file\|[^|]+\|\d+\|[A-Fa-f0-9]+\|/?)|(?:https?://(?:(?:[\w.-]+\.)?(?:pan\.(?:baidu|quark)\.cn|(?:www\.)?(?:alipan|aliyundrive)\.com|drive\.uc\.cn|cloud\.189\.cn|caiyun\.139\.com|(?:www\.)?123(?:684|685|912|pan|592)\.(?:com|cn)|115\.com|115cdn\.com|anxia\.com|pan\.xunlei\.com|mypikpak\.com|pan\.pikpak\.com|drive\.google\.com))(?:/[^\s'"<>()]*)?))`)
 
 // 单独定义各种网盘的链接匹配模式，以便更精确地提取
 // 修改百度网盘链接正则表达式，确保只匹配到链接本身，不包含后面的文本
@@ -24,6 +24,8 @@ var Pan123Pattern = regexp.MustCompile(`https?://(?:www\.)?123(?:684|865|685|912
 var Pan115Pattern = regexp.MustCompile(`https?://(?:115\.com|115cdn\.com|anxia\.com)/s/[a-zA-Z0-9]+(?:\?password=[a-zA-Z0-9]{4})?(?:#)?`)
 // 添加阿里云盘链接正则表达式
 var AliyunPanPattern = regexp.MustCompile(`https?://(?:www\.)?(?:alipan|aliyundrive)\.com/s/[a-zA-Z0-9]+`)
+// 添加谷歌云盘链接正则表达式
+var GoogleDrivePattern = regexp.MustCompile(`https?://drive\.google\.com/(?:file/d/[a-zA-Z0-9_-]+|drive/folders/[a-zA-Z0-9_-]+|open\?id=[a-zA-Z0-9_-]+)(?:/[^\s'"<>()]*)?`)
 
 // 提取码匹配正则表达式 - 增强提取密码的能力
 var PasswordPattern = regexp.MustCompile(`(?i)(?:(?:提取|访问|提取密|密)码|pwd)[：:]\s*([a-zA-Z0-9]{4})(?:[^a-zA-Z0-9]|$)`)
@@ -83,10 +85,15 @@ func GetLinkType(url string) string {
 	}
 	
 	// 123网盘有多个域名
-	if strings.Contains(url, "123684.com") || strings.Contains(url, "123685.com") || strings.Contains(url, "123865.com") || 
-	   strings.Contains(url, "123912.com") || strings.Contains(url, "123pan.com") || 
+	if strings.Contains(url, "123684.com") || strings.Contains(url, "123685.com") || strings.Contains(url, "123865.com") ||
+	   strings.Contains(url, "123912.com") || strings.Contains(url, "123pan.com") ||
 	   strings.Contains(url, "123pan.cn") || strings.Contains(url, "123592.com") {
 		return "123"
+	}
+	
+	// 谷歌云盘
+	if strings.Contains(url, "drive.google.com") {
+		return "google"
 	}
 	
 	return "others"
@@ -687,6 +694,33 @@ func ExtractNetDiskLinks(text string) []string {
 			}
 			if cleanURL != "" {
 				// 检查是否已经存在相同的链接
+				isDuplicate := false
+				for _, existingLink := range links {
+					normalizedExisting := normalizeURLForComparison(existingLink)
+					normalizedNew := normalizeURLForComparison(cleanURL)
+					
+					if normalizedExisting == normalizedNew {
+						isDuplicate = true
+						break
+					}
+				}
+				
+				if !isDuplicate {
+					links = append(links, cleanURL)
+				}
+			}
+		}
+	}
+	
+	// 提取谷歌云盘链接
+	googleDriveMatches := GoogleDrivePattern.FindAllString(text, -1)
+	if googleDriveMatches != nil {
+		for _, match := range googleDriveMatches {
+			cleanURL := match
+			if strings.HasSuffix(cleanURL, "https") {
+				cleanURL = cleanURL[:len(cleanURL)-5]
+			}
+			if cleanURL != "" {
 				isDuplicate := false
 				for _, existingLink := range links {
 					normalizedExisting := normalizeURLForComparison(existingLink)
