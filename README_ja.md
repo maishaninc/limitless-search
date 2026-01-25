@@ -28,16 +28,17 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 
 ## 🌍 多言語サポート
 
-以下の言語で **100% 翻訳** 対応：
+以下の地域の言語で **100% 翻訳** 対応：
 
-| 言語 | ドキュメント |
-|------|-------------|
-| 🇨🇳 简体中文 | [README.md](README.md) |
-| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
-| 🇺🇸 English | [README_en.md](README_en.md) |
-| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
-| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
-| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+| 国/地域 | 言語 | ドキュメント |
+|---------|------|-------------|
+| 🇨🇳 中国 | 简体中文 | [README.md](README.md) |
+| 🇹🇼 中国台湾 | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇭🇰 中国香港 | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 アメリカ | English | [README_en.md](README_en.md) |
+| 🇯🇵 日本 | 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 ロシア | Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 フランス | Français | [README_fr.md](README_fr.md) |
 
 > 他の言語が必要ですか？[Issues](https://github.com/maishaninc/limitless-search/issues) を提出してください
 

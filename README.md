@@ -28,16 +28,17 @@ Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freean
 
 ## 🌍 多语言支持
 
-已支持以下语言的 **100% 翻译**：
+以下地区的语言实现 **100% 翻译**：
 
-| 语言 | 文档 |
-|------|------|
-| 🇨🇳 简体中文 | [README.md](README.md) |
-| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
-| 🇺🇸 English | [README_en.md](README_en.md) |
-| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
-| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
-| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+| 国家/地区 | 语言 | 文档 |
+|-----------|------|------|
+| 🇨🇳 中国 | 简体中文 | [README.md](README.md) |
+| 🇹🇼 中国台湾 | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇭🇰 中国香港 | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 美国 | English | [README_en.md](README_en.md) |
+| 🇯🇵 日本 | 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 俄罗斯 | Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 法国 | Français | [README_fr.md](README_fr.md) |
 
 > 需要更多语言？请提交 [Issues](https://github.com/maishaninc/limitless-search/issues)
 

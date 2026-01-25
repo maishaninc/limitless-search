@@ -28,16 +28,17 @@ Limitless Search is a high-performance open-source cloud storage resource search
 
 ## 🌍 Multi-language Support
 
-**100% translation** available for:
+**100% translation** available for the following regions:
 
-| Language | Documentation |
-|----------|---------------|
-| 🇨🇳 简体中文 | [README.md](README.md) |
-| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
-| 🇺🇸 English | [README_en.md](README_en.md) |
-| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
-| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
-| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+| Country/Region | Language | Documentation |
+|----------------|----------|---------------|
+| 🇨🇳 China | 简体中文 | [README.md](README.md) |
+| 🇹🇼 Taiwan, China | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇭🇰 Hong Kong, China | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 United States | English | [README_en.md](README_en.md) |
+| 🇯🇵 Japan | 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 Russia | Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 France | Français | [README_fr.md](README_fr.md) |
 
 > Need more languages? Submit an [Issue](https://github.com/maishaninc/limitless-search/issues)
 

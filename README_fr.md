@@ -28,16 +28,17 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 
 ## 🌍 Support multilingue
 
-**Traduction à 100%** disponible pour :
+**Traduction à 100%** disponible pour les régions suivantes :
 
-| Langue | Documentation |
-|--------|---------------|
-| 🇨🇳 简体中文 | [README.md](README.md) |
-| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
-| 🇺🇸 English | [README_en.md](README_en.md) |
-| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
-| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
-| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+| Pays/Région | Langue | Documentation |
+|-------------|--------|---------------|
+| 🇨🇳 Chine | 简体中文 | [README.md](README.md) |
+| 🇹🇼 Taïwan, Chine | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇭🇰 Hong Kong, Chine | 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 États-Unis | English | [README_en.md](README_en.md) |
+| 🇯🇵 Japon | 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 Russie | Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 France | Français | [README_fr.md](README_fr.md) |
 
 > Besoin d'autres langues ? Soumettez une [Issue](https://github.com/maishaninc/limitless-search/issues)
 
