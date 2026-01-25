@@ -8,7 +8,7 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 
 **Site de démonstration :** [https://search.freeanime.org](https://search.freeanime.org)  Version bêta : [https://search-bate.freeanime.org](https://search-bate.freeanime.org)
 
-> Sponsorisé par [Freeanime.org](https://freeanime.org). Maishan Inc. et l'organisation Freeanime.org détiennent tous les droits d'auteur du frontend limitless-search-web. L'utilisation commerciale et la redistribution sont interdites sans autorisation.
+> Sponsorisé par [Freeanime.org](https://freeanime.org). Maishan Inc. et l'organisation Freeanime.org détiennent tous les droits d'auteur du frontend limitless-search-web. L'utilisation commerciale est interdite sans autorisation.
 
 ## 📸 Aperçu de l'interface
 
@@ -405,4 +405,4 @@ Selon les conditions suivantes :
 ---
 
 Backend basé sur le projet [PanSou](https://github.com/fish2018/pansou) pour la partie limitless-search-backend. Open source sous licence MIT.
-Frontend limitless-search-web : Maishan Inc. et l'organisation Freeanime.org détiennent tous les droits d'auteur du frontend limitless-search-web. L'utilisation commerciale et la redistribution sont interdites sans autorisation.
+Frontend limitless-search-web : Maishan Inc. et l'organisation Freeanime.org détiennent tous les droits d'auteur du frontend limitless-search-web. L'utilisation commerciale est interdite sans autorisation.

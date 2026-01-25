@@ -8,7 +8,7 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 
 **デモサイト：** [https://search.freeanime.org](https://search.freeanime.org)  ベータ版：[https://search-bate.freeanime.org](https://search-bate.freeanime.org)
 
-> [Freeanime.org](https://freeanime.org)がスポンサー。Maishan Inc.とFreeanime.org組織は、limitless-search-webフロントエンドのすべての著作権を所有しています。許可なく商用利用および再配布は禁止されています。
+> [Freeanime.org](https://freeanime.org)がスポンサー。Maishan Inc.とFreeanime.org組織は、limitless-search-webフロントエンドのすべての著作権を所有しています。許可なく商用利用は禁止されています。
 
 ## 📸 インターフェースプレビュー
 
@@ -405,4 +405,4 @@ environment:
 ---
 
 バックエンドは[PanSou](https://github.com/fish2018/pansou)プロジェクトに基づいてlimitless-search-backend部分を開発。MITライセンスでオープンソース。
-フロントエンドlimitless-search-web：Maishan Inc.とFreeanime.org組織がlimitless-search-webフロントエンドのすべての著作権を所有しています。許可なく商用利用および再配布は禁止されています。
+フロントエンドlimitless-search-web：Maishan Inc.とFreeanime.org組織がlimitless-search-webフロントエンドのすべての著作権を所有しています。許可なく商用利用は禁止されています。

@@ -8,7 +8,7 @@ Limitless Search 是一个高性能的开源网盘资源搜索工具，由Freean
 
 **在线体验地址：** [https://search.freeanime.org](https://search.freeanime.org)  新版本测试地址：[https://search-bate.freeanime.org](https://search-bate.freeanime.org)
 
-> 由 [Freeanime.org](https://freeanime.org) 赞助 Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用及二次分发。
+> 由 [Freeanime.org](https://freeanime.org) 赞助 Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用。
 
 ## 📸 界面预览
 
@@ -404,4 +404,4 @@ environment:
 ---
 
 后端 基于 [PanSou](https://github.com/fish2018/pansou) 项目开发 limitless-search-backend 部分。以MIT许可证开源。
-前端 limitless-search-web Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用及二次分发。
+前端 limitless-search-web Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用。
