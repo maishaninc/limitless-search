@@ -14,36 +14,32 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 
 <table>
   <tr>
-    <td width="70%">
-      <table>
-        <tr>
-          <td><img src="img/1.jpg" alt="ホームページ" width="350"/></td>
-          <td><img src="img/2.jpg" alt="フッター" width="350"/></td>
-        </tr>
-        <tr>
-          <td><img src="img/3.jpg" alt="CAPTCHA ページ" width="350"/></td>
-          <td><img src="img/4.jpg" alt="検索中" width="350"/></td>
-        </tr>
-        <tr>
-          <td colspan="2" align="center"><img src="img/5.jpg" alt="リソース表示" width="350"/></td>
-        </tr>
-      </table>
-    </td>
-    <td width="30%" valign="top">
-      <h3>🌍 多言語サポート</h3>
-      <p>以下の言語で <strong>100% 翻訳</strong> 対応：</p>
-      <ul>
-        <li>🇨🇳 简体中文</li>
-        <li>🇹🇼 繁體中文</li>
-        <li>🇺🇸 English</li>
-        <li>🇯🇵 日本語</li>
-        <li>🇷🇺 Русский</li>
-        <li>🇫🇷 Français</li>
-      </ul>
-      <p><em>他の言語が必要ですか？<a href="https://github.com/maishaninc/limitless-search/issues">Issues</a> を提出してください</em></p>
-    </td>
+    <td><img src="img/1.jpg" alt="ホームページ" width="400"/></td>
+    <td><img src="img/2.jpg" alt="フッター" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="img/3.jpg" alt="CAPTCHA ページ" width="400"/></td>
+    <td><img src="img/4.jpg" alt="検索中" width="400"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="img/5.jpg" alt="リソース表示" width="400"/></td>
   </tr>
 </table>
+
+## 🌍 多言語サポート
+
+以下の言語で **100% 翻訳** 対応：
+
+| 言語 | ドキュメント |
+|------|-------------|
+| 🇨🇳 简体中文 | [README.md](README.md) |
+| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 English | [README_en.md](README_en.md) |
+| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+
+> 他の言語が必要ですか？[Issues](https://github.com/maishaninc/limitless-search/issues) を提出してください
 
 ## 📋 最近の更新
 
@@ -51,6 +47,7 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 - 🗑️ javdbプラグインを削除
 - 🎨 ウェブサイトのホームページレイアウトを更新
 - 🔍 検索機能を最適化
+- 🌐 Google ドライブ検索サポートを追加
 
 ## 🚀 クイックデプロイ
 
@@ -385,8 +382,18 @@ environment:
 ```
 
 ## 📄 ライセンス
-MIT License
-Maishan Inc. - [無料オープンソースソフトウェアライセンス契約](https://www.maishanzero.com/license/free-opensource-software-licensing-agreement/)
+
+[![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+本プロジェクトは [CC BY-NC 4.0 (表示-非営利 4.0 国際)](https://creativecommons.org/licenses/by-nc/4.0/deed.ja) ライセンスの下で公開されています。
+
+以下の条件で自由に：
+- **共有** — どのような媒体や形式でも資料を複製・再配布できます
+- **翻案** — 資料をリミックス、変形、または加工できます
+
+以下の条件に従う必要があります：
+- **表示** — 適切なクレジットを表示し、ライセンスへのリンクを提供し、変更があったかどうかを示す必要があります
+- **非営利** — 営利目的で資料を使用することはできません
 
 ## 🔗 関連リンク
 

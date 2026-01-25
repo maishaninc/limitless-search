@@ -14,36 +14,32 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 
 <table>
   <tr>
-    <td width="70%">
-      <table>
-        <tr>
-          <td><img src="img/1.jpg" alt="Page d'accueil" width="350"/></td>
-          <td><img src="img/2.jpg" alt="Pied de page" width="350"/></td>
-        </tr>
-        <tr>
-          <td><img src="img/3.jpg" alt="Page CAPTCHA" width="350"/></td>
-          <td><img src="img/4.jpg" alt="Recherche en cours" width="350"/></td>
-        </tr>
-        <tr>
-          <td colspan="2" align="center"><img src="img/5.jpg" alt="Affichage des ressources" width="350"/></td>
-        </tr>
-      </table>
-    </td>
-    <td width="30%" valign="top">
-      <h3>🌍 Support multilingue</h3>
-      <p><strong>Traduction à 100%</strong> disponible pour :</p>
-      <ul>
-        <li>🇨🇳 简体中文</li>
-        <li>🇹🇼 繁體中文</li>
-        <li>🇺🇸 English</li>
-        <li>🇯🇵 日本語</li>
-        <li>🇷🇺 Русский</li>
-        <li>🇫🇷 Français</li>
-      </ul>
-      <p><em>Besoin d'autres langues ? Soumettez une <a href="https://github.com/maishaninc/limitless-search/issues">Issue</a></em></p>
-    </td>
+    <td><img src="img/1.jpg" alt="Page d'accueil" width="400"/></td>
+    <td><img src="img/2.jpg" alt="Pied de page" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="img/3.jpg" alt="Page CAPTCHA" width="400"/></td>
+    <td><img src="img/4.jpg" alt="Recherche en cours" width="400"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="img/5.jpg" alt="Affichage des ressources" width="400"/></td>
   </tr>
 </table>
+
+## 🌍 Support multilingue
+
+**Traduction à 100%** disponible pour :
+
+| Langue | Documentation |
+|--------|---------------|
+| 🇨🇳 简体中文 | [README.md](README.md) |
+| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 English | [README_en.md](README_en.md) |
+| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+
+> Besoin d'autres langues ? Soumettez une [Issue](https://github.com/maishaninc/limitless-search/issues)
 
 ## 📋 Mises à jour récentes
 
@@ -51,6 +47,7 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 - 🗑️ Suppression du plugin javdb
 - 🎨 Mise à jour de la mise en page de la page d'accueil
 - 🔍 Optimisation de la fonction de recherche
+- 🌐 Ajout du support de recherche Google Drive
 
 ## 🚀 Déploiement rapide
 
@@ -385,8 +382,18 @@ environment:
 ```
 
 ## 📄 Licence
-MIT License
-Maishan Inc. - [Accord de licence de logiciel libre gratuit](https://www.maishanzero.com/license/free-opensource-software-licensing-agreement/)
+
+[![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+Ce projet est sous licence [CC BY-NC 4.0 (Attribution-Pas d'Utilisation Commerciale 4.0 International)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr).
+
+Vous êtes libre de :
+- **Partager** — copier et redistribuer le matériel sous n'importe quel format
+- **Adapter** — remixer, transformer et créer à partir du matériel
+
+Selon les conditions suivantes :
+- **Attribution** — Vous devez créditer l'œuvre, fournir un lien vers la licence et indiquer si des modifications ont été effectuées
+- **Pas d'Utilisation Commerciale** — Vous ne pouvez pas utiliser le matériel à des fins commerciales
 
 ## 🔗 Liens connexes
 

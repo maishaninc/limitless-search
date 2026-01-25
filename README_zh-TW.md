@@ -14,36 +14,32 @@ Limitless Search 是一個高性能的開源網盤資源搜索工具，由Freean
 
 <table>
   <tr>
-    <td width="70%">
-      <table>
-        <tr>
-          <td><img src="img/1.jpg" alt="主頁" width="350"/></td>
-          <td><img src="img/2.jpg" alt="底部" width="350"/></td>
-        </tr>
-        <tr>
-          <td><img src="img/3.jpg" alt="人機驗證頁面" width="350"/></td>
-          <td><img src="img/4.jpg" alt="搜索中" width="350"/></td>
-        </tr>
-        <tr>
-          <td colspan="2" align="center"><img src="img/5.jpg" alt="展示資源" width="350"/></td>
-        </tr>
-      </table>
-    </td>
-    <td width="30%" valign="top">
-      <h3>🌍 多語言支持</h3>
-      <p>已支持以下語言的 <strong>100% 翻譯</strong>：</p>
-      <ul>
-        <li>🇨🇳 简体中文</li>
-        <li>🇹🇼 繁體中文</li>
-        <li>🇺🇸 English</li>
-        <li>🇯🇵 日本語</li>
-        <li>🇷🇺 Русский</li>
-        <li>🇫🇷 Français</li>
-      </ul>
-      <p><em>需要更多語言？請提交 <a href="https://github.com/maishaninc/limitless-search/issues">Issues</a></em></p>
-    </td>
+    <td><img src="img/1.jpg" alt="主頁" width="400"/></td>
+    <td><img src="img/2.jpg" alt="底部" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="img/3.jpg" alt="人機驗證頁面" width="400"/></td>
+    <td><img src="img/4.jpg" alt="搜索中" width="400"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="img/5.jpg" alt="展示資源" width="400"/></td>
   </tr>
 </table>
+
+## 🌍 多語言支持
+
+已支持以下語言的 **100% 翻譯**：
+
+| 語言 | 文檔 |
+|------|------|
+| 🇨🇳 简体中文 | [README.md](README.md) |
+| 🇹🇼 繁體中文 | [README_zh-TW.md](README_zh-TW.md) |
+| 🇺🇸 English | [README_en.md](README_en.md) |
+| 🇯🇵 日本語 | [README_ja.md](README_ja.md) |
+| 🇷🇺 Русский | [README_ru.md](README_ru.md) |
+| 🇫🇷 Français | [README_fr.md](README_fr.md) |
+
+> 需要更多語言？請提交 [Issues](https://github.com/maishaninc/limitless-search/issues)
 
 ## 📋 最近更新
 
@@ -51,6 +47,7 @@ Limitless Search 是一個高性能的開源網盤資源搜索工具，由Freean
 - 🗑️ 刪除插件 javdb
 - 🎨 更新了網站主頁排版
 - 🔍 優化了搜索功能
+- 🌐 添加 Google 雲端硬碟搜索支持
 
 ## 🚀 快速部署
 
@@ -385,8 +382,18 @@ environment:
 ```
 
 ## 📄 許可證
-MIT License
-Maishan Inc. - [免費開源軟解協議](https://www.maishanzero.com/license/free-opensource-software-licensing-agreement/)
+
+[![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+本項目採用 [CC BY-NC 4.0 (署名-非商業性使用 4.0 國際)](https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hant) 許可證。
+
+您可以自由地：
+- **分享** — 在任何媒介以任何形式複製、發行本作品
+- **演繹** — 修改、轉換或以本作品為基礎進行創作
+
+惟須遵守下列條件：
+- **署名** — 您必須給出適當的署名，提供指向本許可證的連結，同時標明是否（對原始作品）作了修改
+- **非商業性使用** — 您不得將本作品用於商業目的
 
 ## 🔗 相關鏈接
 
