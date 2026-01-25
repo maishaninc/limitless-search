@@ -32,7 +32,7 @@ services:
       # Proxy (optional)
       # - PROXY=socks5://proxy:7897
     volumes:
-      - pansou-cache:/app/cache
+      - limitless-search:/app/cache
     networks:
       limitless-network:
         aliases:
@@ -65,8 +65,8 @@ services:
       - limitless-network
 
 volumes:
-  pansou-cache:
-    name: pansou-cache
+  limitless-search:
+    name: limitless-search
 
 networks:
   limitless-network:
