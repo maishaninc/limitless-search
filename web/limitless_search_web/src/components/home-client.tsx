@@ -538,6 +538,8 @@ export default function HomeClient() {
     "123": t.drives.pan123,
     magnet: t.drives.magnet,
     ed2k: t.drives.ed2k,
+    google: t.drives.google,
+    googledrive: t.drives.google,
   };
 
   const availableDriveTypes = Array.from(
@@ -806,6 +808,7 @@ export default function HomeClient() {
     { name: t.drives.yidong, icon: HardDrive },
     { name: t.drives.pikpak, icon: HardDrive },
     { name: t.drives.pan123, icon: HardDrive },
+    { name: t.drives.google, icon: HardDrive },
     { name: t.drives.magnet, icon: Magnet },
     { name: t.drives.ed2k, icon: LinkIcon },
   ];

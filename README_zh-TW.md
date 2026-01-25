@@ -326,6 +326,7 @@ environment:
 - PikPak (`pikpak`)
 - 迅雷網盤 (`xunlei`)
 - 123網盤 (`123`)
+- Google 雲端硬碟 (`google`)
 - 磁力鏈接 (`magnet`)
 - 電驢鏈接 (`ed2k`)
 

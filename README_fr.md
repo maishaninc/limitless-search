@@ -326,6 +326,7 @@ environment:
 - PikPak (`pikpak`)
 - Xunlei Drive (`xunlei`)
 - 123 Drive (`123`)
+- Google Drive (`google`)
 - Liens Magnet (`magnet`)
 - Liens ED2K (`ed2k`)
 

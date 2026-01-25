@@ -103,6 +103,7 @@ type Translations = {
    pan123: string;
    magnet: string;
    ed2k: string;
+   google: string;
  };
  about: {
    title: string;
@@ -219,6 +220,7 @@ const translations: Record<Language, Translations> = {
       pan123: "123 网盘",
       magnet: "磁力链接",
       ed2k: "电驴链接",
+      google: "谷歌云盘",
     },
     about: {
       title: "关于 Limitless Search",
@@ -335,6 +337,7 @@ const translations: Record<Language, Translations> = {
       pan123: "123 網盤",
       magnet: "磁力連結",
       ed2k: "電驢連結",
+      google: "Google 雲端硬碟",
     },
     about: {
       title: "關於 Limitless Search",
@@ -453,6 +456,7 @@ const translations: Record<Language, Translations> = {
       pan123: "123 Drive",
       magnet: "Magnet Link",
       ed2k: "eDonkey Link",
+      google: "Google Drive",
     },
     about: {
       title: "About Limitless Search",
@@ -571,6 +575,7 @@ const translations: Record<Language, Translations> = {
       pan123: "123 Drive",
       magnet: "Magnet Link",
       ed2k: "eDonkey Link",
+      google: "Google ドライブ",
     },
     about: {
       title: "Limitless Search とは",
@@ -689,6 +694,7 @@ const translations: Record<Language, Translations> = {
       pan123: "123 Drive",
       magnet: "Magnet Link",
       ed2k: "eDonkey Link",
+      google: "Google Диск",
     },
     about: {
       title: "О Limitless Search",
@@ -807,6 +813,7 @@ const translations: Record<Language, Translations> = {
       pan123: "123 Drive",
       magnet: "Lien Magnet",
       ed2k: "Lien eDonkey",
+      google: "Google Drive",
     },
     about: {
       title: "À propos de Limitless Search",

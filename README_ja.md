@@ -326,6 +326,7 @@ environment:
 - PikPak (`pikpak`)
 - 迅雷网盘 (`xunlei`)
 - 123网盘 (`123`)
+- Google ドライブ (`google`)
 - マグネットリンク (`magnet`)
 - ED2Kリンク (`ed2k`)
 
