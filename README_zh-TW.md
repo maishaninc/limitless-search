@@ -114,7 +114,51 @@ touch .env
 ```env
 # 後端 API 地址
 NEXT_PUBLIC_API_BASE=http://backend:8888
+
+# --- 人機驗證配置 ---
+# 選擇驗證服務提供商: "turnstile" | "hcaptcha" | "none"
+NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+
+# [Cloudflare Turnstile 配置]
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+
+# [hCaptcha 配置]
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+HCAPTCHA_SECRET_KEY=
+
+# --- AI 原版名稱推薦（遵循 OpenAI 兼容接口）---
+# 是否啟用 AI 推薦（搜索結果少於閾值時自動彈窗，結果多時顯示懸浮提示）
+NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+# 觸發 AI 提示的結果數量閾值（默認 50）
+NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+# OpenAI 兼容接口地址，例如 https://xxxx.com/v1
+AI_SUGGEST_BASE_URL=
+# OpenAI 兼容模型名稱，例如 gpt-5
+AI_SUGGEST_MODEL=
+# OpenAI 兼容 API Key（僅服務端使用，不要以 NEXT_PUBLIC_ 開頭）
+AI_SUGGEST_API_KEY=
+# 自定義提示詞，可留空使用內置提示詞 
+# "內置提示詞"在 web/limitless_search_web/src/app/api/ai-suggest/route.ts
+AI_SUGGEST_PROMPT=
 ```
+
+### 配置說明
+
+| 環境變量 | 描述 | 默認值 |
+|----------|------|--------|
+| `NEXT_PUBLIC_API_BASE` | 後端 API 地址 | `http://backend:8888` |
+| `NEXT_PUBLIC_CAPTCHA_PROVIDER` | 人機驗證服務提供商 | `none` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | 無 |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | 無 |
+| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | hCaptcha Site Key | 無 |
+| `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | 無 |
+| `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | 是否啟用 AI 推薦 | `true` |
+| `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | AI 推薦觸發閾值 | `50` |
+| `AI_SUGGEST_BASE_URL` | OpenAI 兼容接口地址 | 無 |
+| `AI_SUGGEST_MODEL` | OpenAI 兼容模型名稱 | 無 |
+| `AI_SUGGEST_API_KEY` | OpenAI 兼容 API Key | 無 |
+| `AI_SUGGEST_PROMPT` | 自定義提示詞 | 內置提示詞 |
 
 > **注意**：如果 `.env` 文件不存在，前端服務可能無法正常連接後端 API。請確保在啟動服務前創建並配置此文件。
 

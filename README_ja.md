@@ -114,7 +114,51 @@ touch .env
 ```env
 # バックエンドAPI URL
 NEXT_PUBLIC_API_BASE=http://backend:8888
+
+# --- CAPTCHA設定 ---
+# 認証プロバイダーを選択: "turnstile" | "hcaptcha" | "none"
+NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+
+# [Cloudflare Turnstile設定]
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+
+# [hCaptcha設定]
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+HCAPTCHA_SECRET_KEY=
+
+# --- AIオリジナル名レコメンデーション（OpenAI互換API）---
+# AIレコメンデーションを有効にする（結果が閾値未満の場合は自動ポップアップ、多い場合はフローティングヒント）
+NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+# AIヒントをトリガーする結果数の閾値（デフォルト50）
+NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+# OpenAI互換APIエンドポイント、例：https://xxxx.com/v1
+AI_SUGGEST_BASE_URL=
+# OpenAI互換モデル名、例：gpt-5
+AI_SUGGEST_MODEL=
+# OpenAI互換API Key（サーバーサイドのみ、NEXT_PUBLIC_で始めないでください）
+AI_SUGGEST_API_KEY=
+# カスタムプロンプト、空のままで内蔵プロンプトを使用
+# "内蔵プロンプト"は web/limitless_search_web/src/app/api/ai-suggest/route.ts にあります
+AI_SUGGEST_PROMPT=
 ```
+
+### 設定リファレンス
+
+| 変数 | 説明 | デフォルト |
+|------|------|-----------|
+| `NEXT_PUBLIC_API_BASE` | バックエンドAPI URL | `http://backend:8888` |
+| `NEXT_PUBLIC_CAPTCHA_PROVIDER` | CAPTCHAサービスプロバイダー | `none` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | なし |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | なし |
+| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | hCaptcha Site Key | なし |
+| `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | なし |
+| `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | AIレコメンデーションを有効にする | `true` |
+| `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | AIレコメンデーショントリガー閾値 | `50` |
+| `AI_SUGGEST_BASE_URL` | OpenAI互換APIエンドポイント | なし |
+| `AI_SUGGEST_MODEL` | OpenAI互換モデル名 | なし |
+| `AI_SUGGEST_API_KEY` | OpenAI互換API Key | なし |
+| `AI_SUGGEST_PROMPT` | カスタムプロンプト | 内蔵プロンプト |
 
 > **注意**：`.env` ファイルが存在しない場合、フロントエンドサービスがバックエンドAPIに正常に接続できない可能性があります。サービスを起動する前に、このファイルを作成して設定してください。
 

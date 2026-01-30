@@ -114,7 +114,51 @@ touch .env
 ```env
 # URL Backend API
 NEXT_PUBLIC_API_BASE=http://backend:8888
+
+# --- Настройка CAPTCHA ---
+# Выберите провайдера проверки: "turnstile" | "hcaptcha" | "none"
+NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+
+# [Настройка Cloudflare Turnstile]
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+
+# [Настройка hCaptcha]
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+HCAPTCHA_SECRET_KEY=
+
+# --- AI-рекомендация оригинального названия (OpenAI-совместимый API) ---
+# Включить AI-рекомендации (авто-всплывающее окно при результатах < порога, плавающая подсказка при многих)
+NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+# Порог количества результатов для срабатывания AI-подсказки (по умолчанию 50)
+NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+# Конечная точка OpenAI-совместимого API, например: https://xxxx.com/v1
+AI_SUGGEST_BASE_URL=
+# Имя OpenAI-совместимой модели, например: gpt-5
+AI_SUGGEST_MODEL=
+# OpenAI-совместимый API Key (только серверная сторона, не начинайте с NEXT_PUBLIC_)
+AI_SUGGEST_API_KEY=
+# Пользовательский промпт, оставьте пустым для использования встроенного промпта
+# "Встроенный промпт" в web/limitless_search_web/src/app/api/ai-suggest/route.ts
+AI_SUGGEST_PROMPT=
 ```
+
+### Справочник конфигурации
+
+| Переменная | Описание | По умолчанию |
+|------------|----------|--------------|
+| `NEXT_PUBLIC_API_BASE` | URL Backend API | `http://backend:8888` |
+| `NEXT_PUBLIC_CAPTCHA_PROVIDER` | Провайдер CAPTCHA-сервиса | `none` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | Нет |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | Нет |
+| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | hCaptcha Site Key | Нет |
+| `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | Нет |
+| `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | Включить AI-рекомендации | `true` |
+| `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | Порог срабатывания AI | `50` |
+| `AI_SUGGEST_BASE_URL` | Конечная точка OpenAI API | Нет |
+| `AI_SUGGEST_MODEL` | Имя модели OpenAI | Нет |
+| `AI_SUGGEST_API_KEY` | API Key OpenAI | Нет |
+| `AI_SUGGEST_PROMPT` | Пользовательский промпт | Встроенный промпт |
 
 > **Примечание**: Если файл `.env` не существует, frontend-сервис может не подключиться к backend API. Убедитесь, что этот файл создан и настроен перед запуском сервиса.
 
