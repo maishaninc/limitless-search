@@ -93,63 +93,30 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 🔐 人機驗證配置
+## 🔧 前端環境配置
 
-Web 前端支持人機驗證功能，可以防止惡意爬蟲和濫用。配置文件位於 `web/limitless_search_web/.env`。
+Web 前端需要配置環境變量文件。如果 `web/limitless_search_web/.env` 文件不存在，請手動創建。
 
-### 支持的驗證服務
+### 創建配置文件
 
-| 服務提供商 | 說明 |
-|-----------|------|
-| `turnstile` | Cloudflare Turnstile（推薦） |
-| `hcaptcha` | hCaptcha （推薦） |
-| `none` | 不啟用驗證（默認） |
+```bash
+# 進入前端目錄
+cd web/limitless_search_web
 
-### 配置方法
+# 創建 .env 文件
+touch .env
+```
 
-編輯 `web/limitless_search_web/.env` 文件：
+### 配置內容
+
+編輯 `web/limitless_search_web/.env` 文件，添加以下配置：
 
 ```env
 # 後端 API 地址
 NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- 人機驗證配置 ---
-# 選擇驗證服務提供商: "turnstile" | "hcaptcha" | "none" 
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Cloudflare Turnstile 配置]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key
-TURNSTILE_SECRET_KEY=your-secret-key
-
-# [hCaptcha 配置]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-HCAPTCHA_SECRET_KEY=your-secret-key
 ```
 
-### Cloudflare Turnstile 配置步驟
-
-1. 訪問 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. 進入 **Turnstile** 頁面
-3. 點擊 **Add Site** 創建新站點
-4. 獲取 **Site Key** 和 **Secret Key**
-5. 在 `.env` 文件中配置：
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=turnstile
-   NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...
-   TURNSTILE_SECRET_KEY=0x4AAAAAAA...
-   ```
-
-### hCaptcha 配置步驟
-
-1. 訪問 [hCaptcha Dashboard](https://dashboard.hcaptcha.com/)
-2. 註冊並創建新站點
-3. 獲取 **Site Key** 和 **Secret Key**
-4. 在 `.env` 文件中配置：
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=hcaptcha
-   NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-   HCAPTCHA_SECRET_KEY=your-secret-key
-   ```
+> **注意**：如果 `.env` 文件不存在，前端服務可能無法正常連接後端 API。請確保在啟動服務前創建並配置此文件。
 
 ## 🆕 版本更新
 
@@ -178,24 +145,6 @@ git pull
 ```
 
 > 如果你修改過本地代碼，請先備份或使用 git stash 保存改動。
-
-## 🤖 AI 推薦配置
-
-前端支持 AI 推薦查詢功能，可根據搜索結果數量給出原版名稱建議。配置文件位於 `web/limitless_search_web/.env`。
-
-```env
-# --- AI 推薦配置 ---
-# 是否啟用 AI 推薦（默認 true）
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-
-# 觸發閾值（結果條數 <= 閾值時觸發）
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-
-# 是否強制要求先通過人機驗證
-NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
-```
-
-> 說明：若未配置或設置為 `false`，AI 推薦將不顯示。
 
 ## ⚙️ 配置說明
 

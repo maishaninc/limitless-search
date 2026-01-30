@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
     image: limitless-search-backend:local
     container_name: limitless-search-backend
+    pull_policy: never  
     restart: unless-stopped
     expose:
       - "8888"
@@ -50,6 +51,7 @@ services:
       dockerfile: Dockerfile
     image: limitless-search-web:local
     container_name: limitless-search-web
+    pull_policy: never
     restart: unless-stopped
     depends_on:
       - backend

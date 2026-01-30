@@ -93,63 +93,30 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 🔐 Configuration CAPTCHA
+## 🔧 Configuration de l'environnement Frontend
 
-Le frontend web prend en charge la vérification CAPTCHA pour empêcher les robots malveillants et les abus. Le fichier de configuration se trouve dans `web/limitless_search_web/.env`.
+Le frontend web nécessite un fichier de variables d'environnement. Si le fichier `web/limitless_search_web/.env` n'existe pas, veuillez le créer manuellement.
 
-### Services de vérification pris en charge
+### Créer le fichier de configuration
 
-| Fournisseur | Description |
-|-------------|-------------|
-| `turnstile` | Cloudflare Turnstile (recommandé) |
-| `hcaptcha` | hCaptcha (recommandé) |
-| `none` | Désactivé (par défaut) |
+```bash
+# Accéder au répertoire frontend
+cd web/limitless_search_web
 
-### Méthode de configuration
+# Créer le fichier .env
+touch .env
+```
 
-Modifier le fichier `web/limitless_search_web/.env` :
+### Contenu de la configuration
+
+Modifier le fichier `web/limitless_search_web/.env` et ajouter la configuration suivante :
 
 ```env
 # URL de l'API Backend
 NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- Configuration CAPTCHA ---
-# Choisir le fournisseur de vérification : "turnstile" | "hcaptcha" | "none" 
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Configuration Cloudflare Turnstile]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key
-TURNSTILE_SECRET_KEY=your-secret-key
-
-# [Configuration hCaptcha]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-HCAPTCHA_SECRET_KEY=your-secret-key
 ```
 
-### Étapes de configuration Cloudflare Turnstile
-
-1. Visiter [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Aller à la page **Turnstile**
-3. Cliquer sur **Add Site** pour créer un nouveau site
-4. Obtenir la **Site Key** et la **Secret Key**
-5. Configurer dans le fichier `.env` :
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=turnstile
-   NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...
-   TURNSTILE_SECRET_KEY=0x4AAAAAAA...
-   ```
-
-### Étapes de configuration hCaptcha
-
-1. Visiter [hCaptcha Dashboard](https://dashboard.hcaptcha.com/)
-2. S'inscrire et créer un nouveau site
-3. Obtenir la **Site Key** et la **Secret Key**
-4. Configurer dans le fichier `.env` :
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=hcaptcha
-   NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-   HCAPTCHA_SECRET_KEY=your-secret-key
-   ```
+> **Note** : Si le fichier `.env` n'existe pas, le service frontend peut ne pas être en mesure de se connecter correctement à l'API backend. Veuillez vous assurer de créer et configurer ce fichier avant de démarrer le service.
 
 ## 🆕 Mise à jour de version
 
@@ -178,24 +145,6 @@ git pull
 ```
 
 > Si vous avez modifié le code local, veuillez d'abord sauvegarder ou utiliser git stash pour enregistrer les modifications.
-
-## 🤖 Configuration des recommandations IA
-
-Le frontend prend en charge la fonction de requête de recommandation IA, fournissant des suggestions de noms originaux basées sur le nombre de résultats de recherche. Le fichier de configuration se trouve dans `web/limitless_search_web/.env`.
-
-```env
-# --- Configuration des recommandations IA ---
-# Activer les recommandations IA (par défaut true)
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-
-# Seuil de déclenchement (se déclenche quand résultats <= seuil)
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-
-# Exiger d'abord la vérification CAPTCHA
-NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
-```
-
-> Note : Si non configuré ou défini sur `false`, les recommandations IA ne seront pas affichées.
 
 ## ⚙️ Guide de configuration
 

@@ -93,63 +93,30 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 🔐 CAPTCHA設定
+## 🔧 フロントエンド環境設定
 
-Webフロントエンドは、悪意のあるクローラーや不正使用を防ぐためのCAPTCHA認証機能をサポートしています。設定ファイルは `web/limitless_search_web/.env` にあります。
+Webフロントエンドには環境変数ファイルの設定が必要です。`web/limitless_search_web/.env` ファイルが存在しない場合は、手動で作成してください。
 
-### サポートされている認証サービス
+### 設定ファイルの作成
 
-| プロバイダー | 説明 |
-|-------------|------|
-| `turnstile` | Cloudflare Turnstile（推奨） |
-| `hcaptcha` | hCaptcha（推奨） |
-| `none` | 無効（デフォルト） |
+```bash
+# フロントエンドディレクトリに移動
+cd web/limitless_search_web
 
-### 設定方法
+# .envファイルを作成
+touch .env
+```
 
-`web/limitless_search_web/.env` ファイルを編集：
+### 設定内容
+
+`web/limitless_search_web/.env` ファイルを編集し、以下の設定を追加：
 
 ```env
 # バックエンドAPI URL
 NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- CAPTCHA設定 ---
-# 認証プロバイダーを選択: "turnstile" | "hcaptcha" | "none" 
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Cloudflare Turnstile設定]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key
-TURNSTILE_SECRET_KEY=your-secret-key
-
-# [hCaptcha設定]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-HCAPTCHA_SECRET_KEY=your-secret-key
 ```
 
-### Cloudflare Turnstileセットアップ手順
-
-1. [Cloudflare Dashboard](https://dash.cloudflare.com/)にアクセス
-2. **Turnstile**ページに移動
-3. **Add Site**をクリックして新しいサイトを作成
-4. **Site Key**と**Secret Key**を取得
-5. `.env`ファイルで設定：
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=turnstile
-   NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...
-   TURNSTILE_SECRET_KEY=0x4AAAAAAA...
-   ```
-
-### hCaptchaセットアップ手順
-
-1. [hCaptcha Dashboard](https://dashboard.hcaptcha.com/)にアクセス
-2. 登録して新しいサイトを作成
-3. **Site Key**と**Secret Key**を取得
-4. `.env`ファイルで設定：
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=hcaptcha
-   NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-   HCAPTCHA_SECRET_KEY=your-secret-key
-   ```
+> **注意**：`.env` ファイルが存在しない場合、フロントエンドサービスがバックエンドAPIに正常に接続できない可能性があります。サービスを起動する前に、このファイルを作成して設定してください。
 
 ## 🆕 バージョン更新
 
@@ -178,24 +145,6 @@ git pull
 ```
 
 > ローカルコードを変更した場合は、先にバックアップするか、git stashを使用して変更を保存してください。
-
-## 🤖 AIレコメンデーション設定
-
-フロントエンドは、検索結果数に基づいてオリジナル名の提案を提供するAIレコメンデーションクエリ機能をサポートしています。設定ファイルは `web/limitless_search_web/.env` にあります。
-
-```env
-# --- AIレコメンデーション設定 ---
-# AIレコメンデーションを有効にする（デフォルトtrue）
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-
-# トリガー閾値（結果数 <= 閾値でトリガー）
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-
-# 先にCAPTCHA認証を要求
-NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
-```
-
-> 注意：設定されていないか`false`に設定されている場合、AIレコメンデーションは表示されません。
 
 ## ⚙️ 設定ガイド
 

@@ -93,63 +93,30 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 🔐 CAPTCHA Configuration
+## 🔧 Frontend Environment Configuration
 
-The web frontend supports CAPTCHA verification to prevent malicious crawlers and abuse. Configuration file is located at `web/limitless_search_web/.env`.
+The web frontend requires an environment variable file. If the `web/limitless_search_web/.env` file does not exist, please create it manually.
 
-### Supported Verification Services
+### Create Configuration File
 
-| Provider | Description |
-|----------|-------------|
-| `turnstile` | Cloudflare Turnstile (Recommended) |
-| `hcaptcha` | hCaptcha (Recommended) |
-| `none` | Disabled (Default) |
+```bash
+# Enter the frontend directory
+cd web/limitless_search_web
 
-### Configuration Method
+# Create .env file
+touch .env
+```
 
-Edit the `web/limitless_search_web/.env` file:
+### Configuration Content
+
+Edit the `web/limitless_search_web/.env` file and add the following configuration:
 
 ```env
 # Backend API URL
 NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- CAPTCHA Configuration ---
-# Choose verification provider: "turnstile" | "hcaptcha" | "none" 
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Cloudflare Turnstile Configuration]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key
-TURNSTILE_SECRET_KEY=your-secret-key
-
-# [hCaptcha Configuration]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-HCAPTCHA_SECRET_KEY=your-secret-key
 ```
 
-### Cloudflare Turnstile Setup Steps
-
-1. Visit [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Go to the **Turnstile** page
-3. Click **Add Site** to create a new site
-4. Get the **Site Key** and **Secret Key**
-5. Configure in `.env` file:
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=turnstile
-   NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...
-   TURNSTILE_SECRET_KEY=0x4AAAAAAA...
-   ```
-
-### hCaptcha Setup Steps
-
-1. Visit [hCaptcha Dashboard](https://dashboard.hcaptcha.com/)
-2. Register and create a new site
-3. Get the **Site Key** and **Secret Key**
-4. Configure in `.env` file:
-   ```env
-   NEXT_PUBLIC_CAPTCHA_PROVIDER=hcaptcha
-   NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your-site-key
-   HCAPTCHA_SECRET_KEY=your-secret-key
-   ```
+> **Note**: If the `.env` file does not exist, the frontend service may not be able to connect to the backend API properly. Please ensure this file is created and configured before starting the service.
 
 ## 🆕 Version Updates
 
@@ -178,24 +145,6 @@ git pull
 ```
 
 > If you have modified local code, please backup or use git stash to save changes first.
-
-## 🤖 AI Recommendation Configuration
-
-The frontend supports AI recommendation query functionality, providing original name suggestions based on search result count. Configuration file is located at `web/limitless_search_web/.env`.
-
-```env
-# --- AI Recommendation Configuration ---
-# Enable AI recommendation (default true)
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-
-# Trigger threshold (triggers when results <= threshold)
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-
-# Require CAPTCHA verification first
-NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
-```
-
-> Note: If not configured or set to `false`, AI recommendations will not be displayed.
 
 ## ⚙️ Configuration Guide
 
