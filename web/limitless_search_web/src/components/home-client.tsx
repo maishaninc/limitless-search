@@ -221,7 +221,7 @@ type HomeClientProps = {
 
 export default function HomeClient({ initialLanguage }: HomeClientProps) {
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const CAPTCHA_PROVIDER = (process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER || "none").toLowerCase() as CaptchaProvider;
   const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
