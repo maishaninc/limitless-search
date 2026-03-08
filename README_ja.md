@@ -6,7 +6,16 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 
 ## 🌐 オンラインアクセス
 
-**デモサイト：** [https://search.freeanime.org](https://search.freeanime.org)  ベータ版：[https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+**デモサイト：** [https://search.freeanime.org](https://search.freeanime.org)
+
+**新バージョン テストURL：** [https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+
+**テスト版の追加機能：**
+- AI アニメランキング入口とページを追加（年次 / 月次 / 日次、展開表示対応）
+- ランキング項目をクリックするとトップへ遷移し、検索語を自動入力（自動検索はしない）
+- 現在のサイト言語に合わせてキーワードをローカライズ（中国語表示時は中国語名を優先）
+- ランキング生成にリトライ、失敗ログ、フォールバック表示を追加
+- ランキングSEOページとサイトマップ拡張を設定で制御可能
 
 > [Freeanime.org](https://freeanime.org)がスポンサー。Maishan Inc.とFreeanime.org組織は、limitless-search-webフロントエンドのすべての著作権を所有しています。許可なく商用利用は禁止されています。
 

@@ -6,7 +6,16 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 
 ## 🌐 Accès en ligne
 
-**Site de démonstration :** [https://search.freeanime.org](https://search.freeanime.org)  Version bêta : [https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+**Site de démonstration :** [https://search.freeanime.org](https://search.freeanime.org)
+
+**URL de test (nouvelle version) :** [https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+
+**Nouvelles fonctionnalités de la version de test :**
+- Ajout d'une entree et d'une page de classement anime par IA (annuel / mensuel / quotidien, avec affichage etendu)
+- Le clic sur un titre du classement redirige vers l'accueil avec mot-cle pre-rempli (sans recherche automatique)
+- Redirection avec mot-cle localise selon la langue courante du site (en interface chinoise, nom chinois prioritaire)
+- Generation du classement avec retries, logs d'erreur et page de repli
+- Pages SEO de classement et extension sitemap configurables
 
 > Sponsorisé par [Freeanime.org](https://freeanime.org). Maishan Inc. et l'organisation Freeanime.org détiennent tous les droits d'auteur du frontend limitless-search-web. L'utilisation commerciale est interdite sans autorisation.
 

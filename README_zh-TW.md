@@ -6,7 +6,16 @@ Limitless Search 是一個高性能的開源網盤資源搜索工具，由Freean
 
 ## 🌐 線上訪問
 
-**線上體驗地址：** [https://search.freeanime.org](https://search.freeanime.org)  新版本測試地址：[https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+**線上體驗地址：** [https://search.freeanime.org](https://search.freeanime.org)
+
+**新版本測試地址：** [https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+
+**測試版本新增功能：**
+- 新增 AI 動漫排行榜入口與頁面（年榜 / 月榜 / 日榜，可展開查看）
+- 榜單項目點擊後跳轉首頁並自動填入關鍵字（不自動搜索）
+- 依當前站點語言使用本地化關鍵字跳轉（中文環境優先中文名稱）
+- 排行榜生成支援重試機制、失敗日誌與兜底展示頁
+- 支援排行榜 SEO 頁面與站點地圖自動擴展（可配置開關）
 
 > 由 [Freeanime.org](https://freeanime.org) 贊助 Maishan Inc. 與 Freeanime.org組織 擁有 limitless-search-web 前端頁面的全部版權，未經許可禁止商用。
 

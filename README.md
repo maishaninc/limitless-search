@@ -6,7 +6,16 @@
 
 ## 🌐 在线访问
 
-**在线体验地址：** [https://search.freeanime.org](https://search.freeanime.org)  新版本测试地址：[https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+**在线体验地址：** [https://search.freeanime.org](https://search.freeanime.org)
+
+**新版本测试地址：** [https://search-bate.freeanime.org](https://search-bate.freeanime.org)
+
+**测试版本新增功能：**
+- 新增 AI 动漫排行榜入口与页面（年榜 / 月榜 / 日榜，可展开查看）
+- 榜单条目点击后跳转到主页并自动填写关键词（不自动发起搜索）
+- 支持按当前站点语言使用本地化关键词跳转（中文环境优先中文名称）
+- 排行榜生成支持重试机制、失败日志输出与兜底展示页
+- 支持排行榜 SEO 页面与站点地图自动扩展（可配置开关）
 
 > 由 [Freeanime.org](https://freeanime.org) 赞助 Maishan Inc. 与 Freeanime.org组织 拥有 limitless-search-web 前端页面的全部版权，未经许可禁止商用。
 
