@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 import { Footer } from "@/components/footer";
 import { LanguageInitializer } from "@/components/language-initializer";
 import { Navbar } from "@/components/navbar";
 import { RankingsClient } from "@/components/rankings-client";
+import { RankingsUnavailable } from "@/components/rankings-unavailable";
 import { detectPreferredLanguage, normalizeLanguage } from "@/lib/i18n";
 import { readRankingDataset } from "@/lib/rankings";
 import { rankingsEnabled } from "@/lib/rankings-config";
@@ -80,25 +80,19 @@ export default async function RankingsPage({
 }: {
   searchParams?: Promise<{ lang?: string }>;
 }) {
-  if (!rankingsEnabled()) {
-    notFound();
-  }
-
   const params = await searchParams;
   const requestHeaders = await headers();
   const initialLanguage = params?.lang
     ? normalizeLanguage(params.lang)
     : detectPreferredLanguage(requestHeaders.get("accept-language"));
-  const dataset = await readRankingDataset();
-  if (!dataset) {
-    notFound();
-  }
+  const enabled = rankingsEnabled();
+  const dataset = enabled ? await readRankingDataset() : null;
 
   return (
     <>
       <LanguageInitializer initialLanguage={initialLanguage} />
       <Navbar />
-      <RankingsClient dataset={dataset} />
+      {enabled && dataset ? <RankingsClient dataset={dataset} /> : <RankingsUnavailable />}
       <Footer />
     </>
   );

@@ -65,7 +65,7 @@ services:
         - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
         # AI 推荐是否需要先完成人机验证 : "true" | "false"
         - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
-        # AI 排行榜前端开关: "true" | "false"
+        # AI 排行榜前端显示开关: true=导航栏显示“排行榜”入口，false=前端完全隐藏入口
         - NEXT_PUBLIC_AI_RANKINGS_ENABLED=false
     image: limitless-search-web:local
     container_name: limitless-search-web
@@ -89,9 +89,9 @@ services:
       - AI_SUGGEST_API_KEY=
       # AI 推荐 - 自定义提示词（可留空使用内置提示词）
       - AI_SUGGEST_PROMPT=
-      # AI 排行榜总开关: "true" 时启用排行榜页面、SEO查询入口、站点地图扩展、自动生成任务
+      # AI 排行榜后端总开关: true=启用排行榜页面/SEO入口/API定时生成/sitemap，false=整套排行榜功能停止，但不影响现有 AI 推荐和主页基础 SEO
       - AI_RANKINGS_ENABLED=false
-      # AI 排行榜前端入口开关: 关闭后导航栏不显示排行榜入口
+      # AI 排行榜前端显示开关: true=导航栏显示“排行榜”入口，false=前端完全隐藏入口；通常建议和 AI_RANKINGS_ENABLED 保持一致
       - NEXT_PUBLIC_AI_RANKINGS_ENABLED=false
       # AI 排行榜接口地址（留空则复用 AI 推荐配置）
       - AI_RANKINGS_BASE_URL=

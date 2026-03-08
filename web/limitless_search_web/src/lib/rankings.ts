@@ -141,43 +141,58 @@ const getAiConfig = () => ({
   apiKey: process.env.AI_RANKINGS_API_KEY || process.env.AI_SUGGEST_API_KEY || "",
 });
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const callAiJson = async <T>(systemPrompt: string, userPrompt: string): Promise<T> => {
   const { baseUrl, model, apiKey } = getAiConfig();
   if (!baseUrl || !model || !apiKey) {
     throw new Error("AI rankings configuration missing");
   }
 
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    }),
-    cache: "no-store",
-  });
+  let lastError: Error | null = null;
 
-  const text = await response.text();
-  if (!response.ok) {
-    throw new Error(text || "AI rankings request failed");
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.3,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+        }),
+        cache: "no-store",
+      });
+
+      const text = await response.text();
+      if (!response.ok) {
+        throw new Error(text || `AI rankings request failed on attempt ${attempt}`);
+      }
+
+      const parsed = safeJsonParse(text) as any;
+      const content = parsed?.choices?.[0]?.message?.content || text;
+      const json = typeof content === "string" ? safeJsonParse(content) : content;
+      if (!json || typeof json !== "object") {
+        throw new Error(`AI rankings returned invalid JSON on attempt ${attempt}`);
+      }
+
+      return json as T;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("AI rankings request failed");
+      if (attempt < 3) {
+        await sleep(attempt * 1200);
+      }
+    }
   }
 
-  const parsed = safeJsonParse(text) as any;
-  const content = parsed?.choices?.[0]?.message?.content || text;
-  const json = typeof content === "string" ? safeJsonParse(content) : content;
-  if (!json || typeof json !== "object") {
-    throw new Error("AI rankings returned invalid JSON");
-  }
-
-  return json as T;
+  throw lastError || new Error("AI rankings request failed after 3 attempts");
 };
 
 const defaultListPrompt = (label: string, minItems: number, year: number, month: number) =>

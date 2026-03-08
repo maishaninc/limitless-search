@@ -22,7 +22,7 @@ export function LanguageInitializer({ initialLanguage }: LanguageInitializerProp
 
     const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
     const browserLanguage = detectPreferredLanguage(
-      navigator.languages?.length ? navigator.languages : navigator.language,
+      navigator.languages?.length ? Array.from(navigator.languages) : navigator.language,
     );
     const resolvedLanguage = savedLanguage
       ? detectPreferredLanguage(savedLanguage)
