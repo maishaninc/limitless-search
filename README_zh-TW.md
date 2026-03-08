@@ -26,6 +26,13 @@ Limitless Search 是一個高性能的開源網盤資源搜索工具，由Freean
   </tr>
 </table>
 
+## 🆕 版本更新（2026-03-08）
+
+- 前端環境變量統一改為在根目錄 `docker-compose.yml` 的 `web` 服務中配置
+- 前端默認不再依賴 `web/limitless_search_web/.env`
+- Next.js 服務端代理後端地址改為使用 `API_BASE`
+- 修復 hCaptcha 前端渲染與服務端校驗問題
+
 ## 🌍 多語言支持
 
 以下地區的語言實現 **100% 翻譯**：
@@ -41,14 +48,6 @@ Limitless Search 是一個高性能的開源網盤資源搜索工具，由Freean
 | 🇫🇷 法國 | Français | [README_fr.md](README_fr.md) |
 
 > 需要更多語言？請提交 [Issues](https://github.com/maishaninc/limitless-search/issues)
-
-## 📋 最近更新
-
-**2026-01-25**
-- 🗑️ 刪除插件 javdb
-- 🎨 更新了網站主頁排版
-- 🔍 優化了搜索功能
-- 🌐 添加 Google 雲端硬碟搜索支持
 
 ## 🚀 快速部署
 
@@ -154,15 +153,6 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 | `AI_SUGGEST_PROMPT` | 自定義提示詞 | 內置提示詞 |
 
 > **注意**：Docker 部署時無需創建 `web/limitless_search_web/.env`。只有在本地開發前端時，才需要按需創建 `web/limitless_search_web/.env.local`。
-
-## 🆕 版本更新
-
-### 最近更新（2026-03-08）
-
-- 前端環境變量統一改為在根目錄 `docker-compose.yml` 的 `web` 服務中配置
-- 前端默認不再依賴 `web/limitless_search_web/.env`
-- Next.js 服務端代理後端地址改為使用 `API_BASE`
-- 修復 hCaptcha 前端渲染與服務端校驗問題
 
 ### Docker 部署更新（推薦）
 

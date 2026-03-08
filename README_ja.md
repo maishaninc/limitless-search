@@ -26,6 +26,13 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
   </tr>
 </table>
 
+## 🆕 バージョン更新（2026-03-08）
+
+- フロントエンド環境変数はルート `docker-compose.yml` の `web` サービスで統一して設定
+- フロントエンドは既定で `web/limitless_search_web/.env` に依存しない構成へ変更
+- Next.js サーバー側プロキシのバックエンド接続先を `API_BASE` に統一
+- hCaptcha のフロントエンド描画とサーバー側検証の問題を修正
+
 ## 🌍 多言語サポート
 
 以下の地域の言語で **100% 翻訳** 対応：
@@ -41,14 +48,6 @@ Limitless Searchは、Freeanime.orgとMaishan Inc.が開発した高性能なオ
 | 🇫🇷 フランス | Français | [README_fr.md](README_fr.md) |
 
 > 他の言語が必要ですか？[Issues](https://github.com/maishaninc/limitless-search/issues) を提出してください
-
-## 📋 最近の更新
-
-**2026-01-25**
-- 🗑️ javdbプラグインを削除
-- 🎨 ウェブサイトのホームページレイアウトを更新
-- 🔍 検索機能を最適化
-- 🌐 Google ドライブ検索サポートを追加
 
 ## 🚀 クイックデプロイ
 
@@ -154,15 +153,6 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 | `AI_SUGGEST_PROMPT` | カスタムプロンプト | 内蔵プロンプト |
 
 > **注意**：Docker デプロイでは `web/limitless_search_web/.env` を作成しないでください。ローカル開発時のみ、必要に応じて `web/limitless_search_web/.env.local` を作成してください。
-
-## 🆕 バージョン更新
-
-### 最近の更新（2026-03-08）
-
-- フロントエンド環境変数はルート `docker-compose.yml` の `web` サービスで統一して設定
-- フロントエンドは既定で `web/limitless_search_web/.env` に依存しない構成へ変更
-- Next.js サーバー側プロキシのバックエンド接続先を `API_BASE` に統一
-- hCaptcha のフロントエンド描画とサーバー側検証の問題を修正
 
 ### Dockerデプロイ更新（推奨）
 

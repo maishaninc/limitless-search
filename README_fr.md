@@ -26,6 +26,13 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
   </tr>
 </table>
 
+## 🆕 Mise à jour de version (2026-03-08)
+
+- Les variables d'environnement du frontend sont désormais configurées dans le service `web` du `docker-compose.yml` racine
+- Le frontend ne dépend plus par défaut de `web/limitless_search_web/.env`
+- Le proxy backend côté serveur Next.js utilise maintenant `API_BASE`
+- Correction du rendu frontend hCaptcha et de la vérification côté serveur
+
 ## 🌍 Support multilingue
 
 **Traduction à 100%** disponible pour les régions suivantes :
@@ -41,14 +48,6 @@ Limitless Search est un outil de recherche de ressources de stockage cloud open 
 | 🇫🇷 France | Français | [README_fr.md](README_fr.md) |
 
 > Besoin d'autres langues ? Soumettez une [Issue](https://github.com/maishaninc/limitless-search/issues)
-
-## 📋 Mises à jour récentes
-
-**2026-01-25**
-- 🗑️ Suppression du plugin javdb
-- 🎨 Mise à jour de la mise en page de la page d'accueil
-- 🔍 Optimisation de la fonction de recherche
-- 🌐 Ajout du support de recherche Google Drive
 
 ## 🚀 Déploiement rapide
 
@@ -154,15 +153,6 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 | `AI_SUGGEST_PROMPT` | Prompt personnalisé | Prompt intégré |
 
 > **Note** : Pour un déploiement Docker, ne créez pas `web/limitless_search_web/.env`. Seul le développement local du frontend a éventuellement besoin de `web/limitless_search_web/.env.local`.
-
-## 🆕 Mise à jour de version
-
-### Changements récents (2026-03-08)
-
-- Les variables d'environnement du frontend sont désormais configurées dans le service `web` du `docker-compose.yml` racine
-- Le frontend ne dépend plus par défaut de `web/limitless_search_web/.env`
-- Le proxy backend côté serveur Next.js utilise maintenant `API_BASE`
-- Correction du rendu frontend hCaptcha et de la vérification côté serveur
 
 ### Mise à jour du déploiement Docker (recommandé)
 
