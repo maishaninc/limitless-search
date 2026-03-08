@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Sparkles, Trophy, CalendarDays, Flame } from "lucide-react";
+import { ChevronDown, Sparkles, Trophy, CalendarDays, Flame, Tv, PlaySquare } from "lucide-react";
 import type { RankingDataset, RankingKey, RankingLocale } from "@/lib/rankings";
 import { useLanguage } from "@/lib/i18n";
 
@@ -18,6 +18,9 @@ const copy = {
     yearly: (year: number) => `${year} 年预告热榜`,
     monthly: (month: number) => `${month} 月新番`,
     daily: "当日热榜",
+    bili: "BiliBili 排行",
+    biliHot: "番剧热播榜",
+    biliSchedule: "新番时间表",
     name: "名称",
     score: "评分",
     expand: "展开更多",
@@ -30,6 +33,9 @@ const copy = {
     yearly: (year: number) => `${year} 年預告熱榜`,
     monthly: (month: number) => `${month} 月新番`,
     daily: "當日熱榜",
+    bili: "BiliBili 排行",
+    biliHot: "番劇熱播榜",
+    biliSchedule: "新番時間表",
     name: "名稱",
     score: "評分",
     expand: "展開更多",
@@ -42,6 +48,9 @@ const copy = {
     yearly: (year: number) => `${year} Upcoming`,
     monthly: (month: number) => `${month} Seasonal`,
     daily: "Daily Hot",
+    bili: "BiliBili Rank",
+    biliHot: "Anime Hot Rank",
+    biliSchedule: "Anime Schedule",
     name: "Title",
     score: "Score",
     expand: "Show More",
@@ -54,6 +63,9 @@ const copy = {
     yearly: (year: number) => `${year} 年注目作`,
     monthly: (month: number) => `${month} 月新番`,
     daily: "本日の人気",
+    bili: "BiliBili ランキング",
+    biliHot: "配信人気",
+    biliSchedule: "新番スケジュール",
     name: "作品名",
     score: "スコア",
     expand: "もっと見る",
@@ -66,6 +78,9 @@ const copy = {
     yearly: (year: number) => `${year} Ожидаемые`,
     monthly: (month: number) => `${month} Новинки`,
     daily: "Топ дня",
+    bili: "Рейтинг BiliBili",
+    biliHot: "Топ тайтлов",
+    biliSchedule: "Расписание новинок",
     name: "Название",
     score: "Оценка",
     expand: "Показать еще",
@@ -78,6 +93,9 @@ const copy = {
     yearly: (year: number) => `${year} A venir`,
     monthly: (month: number) => `${month} Nouveautes`,
     daily: "Tendance du jour",
+    bili: "Classement BiliBili",
+    biliHot: "Top anime",
+    biliSchedule: "Calendrier anime",
     name: "Titre",
     score: "Score",
     expand: "Afficher plus",
@@ -90,6 +108,8 @@ const icons = {
   yearly: Trophy,
   monthly: CalendarDays,
   daily: Flame,
+  bili_hot: PlaySquare,
+  bili_schedule: Tv,
 };
 
 export function RankingsClient({ dataset }: RankingsClientProps) {
@@ -98,10 +118,13 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
   const ui = copy[lang];
   const titleLocale: RankingLocale = language === "zh" ? "zh-CN" : language;
   const [activeKey, setActiveKey] = useState<RankingKey>("yearly");
+  const [biliMenuOpen, setBiliMenuOpen] = useState(false);
   const [expanded, setExpanded] = useState<Record<RankingKey, boolean>>({
     yearly: false,
     monthly: false,
     daily: false,
+    bili_hot: false,
+    bili_schedule: false,
   });
 
   const tabs = useMemo(
@@ -111,6 +134,14 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
       { key: "daily" as const, label: ui.daily },
     ],
     [dataset.month, dataset.year, ui],
+  );
+
+  const biliTabs = useMemo(
+    () => [
+      { key: "bili_hot" as const, label: ui.biliHot },
+      { key: "bili_schedule" as const, label: ui.biliSchedule },
+    ],
+    [ui],
   );
 
   const bucket = dataset.rankings[activeKey];
@@ -152,6 +183,66 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
               </button>
             );
           })}
+
+          <div className="relative">
+            <div className="inline-flex items-center rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/70 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveKey("bili_hot");
+                  setBiliMenuOpen(false);
+                }}
+                className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-colors ${
+                  activeKey === "bili_hot" || activeKey === "bili_schedule"
+                    ? "bg-black text-white dark:bg-white dark:text-black"
+                    : "text-neutral-700 dark:text-neutral-200"
+                }`}
+              >
+                <Tv className="w-4 h-4" />
+                <span>{ui.bili}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBiliMenuOpen((value) => !value)}
+                className="px-3 py-3 text-neutral-700 dark:text-neutral-200 border-l border-neutral-200 dark:border-neutral-800"
+                aria-label="Toggle BiliBili ranking menu"
+              >
+                <ChevronDown className={`w-4 h-4 transition-transform ${biliMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {biliMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-52 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl overflow-hidden z-20"
+                >
+                  {biliTabs.map((tab) => {
+                    const active = tab.key === activeKey;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => {
+                          setActiveKey(tab.key);
+                          setBiliMenuOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left text-sm transition-colors ${
+                          active
+                            ? "bg-black text-white dark:bg-white dark:text-black"
+                            : "text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         <AnimatePresence mode="wait">

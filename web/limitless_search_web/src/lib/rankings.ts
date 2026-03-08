@@ -3,7 +3,8 @@ import path from "path";
 import { rankingsEnabled } from "@/lib/rankings-config";
 
 export type RankingLocale = "zh-CN" | "zh-TW" | "en" | "ja" | "ru" | "fr";
-export type RankingKey = "yearly" | "monthly" | "daily";
+export type RankingKey = "yearly" | "monthly" | "daily" | "bili_hot" | "bili_schedule";
+type AiRankingKey = "yearly" | "monthly" | "daily";
 
 export type RankingTitles = Record<RankingLocale, string>;
 
@@ -12,6 +13,8 @@ export type RankingItem = {
   query: string;
   score: number;
   titles: RankingTitles;
+  displayTime?: string;
+  sourceUrl?: string;
 };
 
 export type RankingBucket = {
@@ -117,7 +120,7 @@ export const getRankingLandingUrls = (dataset: RankingDataset) => {
     Object.values(dataset.rankings).flatMap((bucket) => bucket.items),
   );
 
-  return items.map((item) => `/?q=${encodeURIComponent(item.query)}&auto=1`);
+  return items.map((item) => `/?q=${encodeURIComponent(item.query)}`);
 };
 
 export const readRankingDataset = async (): Promise<RankingDataset | null> => {
@@ -453,6 +456,130 @@ const getPrompt = (name: string, fallback: string, purpose: string) => {
 
 const targetItemCount = (minItems: number) => Math.max(20, minItems);
 
+const toBiliScore = (value: number, max: number) => {
+  if (!Number.isFinite(value) || !Number.isFinite(max) || max <= 0) return 0;
+  return normalizeScore((value / max) * 100);
+};
+
+const mapRankItem = (query: string, score: number, extra?: Partial<RankingItem>): RankingItem => ({
+  id: toId(query),
+  query,
+  score: normalizeScore(score),
+  titles: {
+    "zh-CN": query,
+    "zh-TW": query,
+    en: query,
+    ja: query,
+    ru: query,
+    fr: query,
+  },
+  ...extra,
+});
+
+const fetchBiliRankings = async (minItems: number) => {
+  const rankUrl =
+    process.env.AI_RANKINGS_BILIBILI_RANK_URL ||
+    "https://api.bilibili.com/x/web-interface/ranking/v2?rid=13&type=all";
+  const scheduleUrl =
+    process.env.AI_RANKINGS_BILIBILI_SCHEDULE_URL ||
+    "https://api.bilibili.com/pgc/web/timeline/v2";
+  const userAgent =
+    process.env.AI_RANKINGS_BILIBILI_USER_AGENT ||
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
+
+  const [rankResp, scheduleResp] = await Promise.all([
+    fetch(rankUrl, {
+      headers: {
+        "user-agent": userAgent,
+        referer: "https://www.bilibili.com/v/popular/rank/anime",
+      },
+      cache: "no-store",
+    }),
+    fetch(scheduleUrl, {
+      headers: {
+        "user-agent": userAgent,
+        referer: "https://www.bilibili.com/anime",
+      },
+      cache: "no-store",
+    }),
+  ]);
+
+  if (!rankResp.ok) {
+    throw new Error(`Bilibili ranking fetch failed: ${rankResp.status}`);
+  }
+  if (!scheduleResp.ok) {
+    throw new Error(`Bilibili schedule fetch failed: ${scheduleResp.status}`);
+  }
+
+  const rankJson = (await rankResp.json()) as any;
+  const scheduleJson = (await scheduleResp.json()) as any;
+
+  const rankItems = (rankJson?.data?.list || rankJson?.data || []) as any[];
+  const maxPlay = Math.max(
+    1,
+    ...rankItems.map((item) => Number(item?.stat?.view ?? item?.play ?? 0)),
+  );
+
+  const biliHotItems = rankItems
+    .map((item) => {
+      const title = (item?.title || "").trim();
+      if (!title) return null;
+      const play = Number(item?.stat?.view ?? item?.play ?? 0);
+      return mapRankItem(title, toBiliScore(play, maxPlay), {
+        sourceUrl: item?.short_link_v2 || item?.short_link || item?.uri || "https://www.bilibili.com/v/popular/rank/anime",
+      });
+    })
+    .filter(Boolean) as RankingItem[];
+
+  const scheduleRaw = (scheduleJson?.result?.latest || scheduleJson?.result?.timeline || scheduleJson?.data?.timeline || []) as any[];
+  const maxFollow = Math.max(
+    1,
+    ...scheduleRaw.map((item) => Number(item?.follows || item?.pub_index || 0)),
+  );
+
+  const biliScheduleItems = scheduleRaw
+    .flatMap((group: any) => {
+      const episodes = (group?.episodes || group?.seasons || group?.cards || []) as any[];
+      return episodes.map((episode: any) => {
+        const title = (episode?.title || episode?.square_cover_title || episode?.season_title || "").trim();
+        if (!title) return null;
+
+        const follows = Number(episode?.follows || group?.follows || episode?.stat?.follows || 0);
+        const pubTime =
+          episode?.pub_time ||
+          episode?.pub_ts ||
+          episode?.pub_index ||
+          episode?.pub_index_show ||
+          group?.pub_time ||
+          group?.date ||
+          "";
+
+        return mapRankItem(title, toBiliScore(follows, maxFollow), {
+          displayTime: `${pubTime}`.trim(),
+          sourceUrl: episode?.url || episode?.share_url || "https://www.bilibili.com/anime",
+        });
+      });
+    })
+    .filter(Boolean) as RankingItem[];
+
+  const dedup = (items: RankingItem[]) => {
+    const map = new Map<string, RankingItem>();
+    for (const item of items) {
+      const key = item.query.trim().toLowerCase();
+      const current = map.get(key);
+      if (!current || item.score > current.score) {
+        map.set(key, item);
+      }
+    }
+    return Array.from(map.values());
+  };
+
+  return {
+    hot: dedup(biliHotItems),
+    schedule: dedup(biliScheduleItems),
+  };
+};
+
 const mergeCandidateItems = (
   current: Array<{ query: string; score: number }>,
   incoming: AiGeneratedItem[],
@@ -487,7 +614,7 @@ const mergeCandidateItems = (
   return Array.from(map.values()).slice(0, limit);
 };
 
-const fillRankingList = async (key: RankingKey, year: number, month: number, minItems: number) => {
+const fillRankingList = async (key: AiRankingKey, year: number, month: number, minItems: number) => {
   const limit = targetItemCount(minItems);
   let items = sanitizeGeneratedItems((await generateRawList(key, year, month, limit)).items || [], limit);
   const maxAttempts = 4;
@@ -533,7 +660,7 @@ const fillRankingList = async (key: RankingKey, year: number, month: number, min
   return items.slice(0, limit);
 };
 
-const generateRawList = async (key: RankingKey, year: number, month: number, minItems: number) => {
+const generateRawList = async (key: AiRankingKey, year: number, month: number, minItems: number) => {
   const label =
     key === "yearly"
       ? `${year} upcoming anime ranking`
@@ -556,7 +683,7 @@ const generateRawList = async (key: RankingKey, year: number, month: number, min
 };
 
 const verifyRankingList = async (
-  key: RankingKey,
+  key: AiRankingKey,
   items: Array<{ query: string; score: number }>,
   year: number,
   month: number,
@@ -587,7 +714,7 @@ const verifyRankingList = async (
 };
 
 const ensureVerifiedList = async (
-  key: RankingKey,
+  key: AiRankingKey,
   initialItems: Array<{ query: string; score: number }>,
   year: number,
   month: number,
@@ -701,7 +828,20 @@ export const generateRankings = async () => {
       yearly: yearlyVerified,
       monthly: monthlyVerified,
       daily: dailyVerified,
-    } satisfies Record<RankingKey, Array<{ query: string; score: number }>>;
+    } satisfies Record<AiRankingKey, Array<{ query: string; score: number }>>;
+
+    let biliData: { hot: RankingItem[]; schedule: RankingItem[] } = {
+      hot: [],
+      schedule: [],
+    };
+
+    try {
+      biliData = await fetchBiliRankings(minItems);
+    } catch (error) {
+      logRankingsError("pipeline", error, {
+        reason: "bilibili fetch failed; continue with AI rankings",
+      });
+    }
 
     const allQueries = Array.from(new Set(Object.values(rawLists).flatMap((list) => list.map((item) => item.query))));
     const blocked = await moderateQueries(allQueries);
@@ -715,7 +855,7 @@ export const generateRankings = async () => {
         key,
         items.filter((item) => !blocked.has(item.query.trim().toLowerCase())),
       ]),
-    ) as Record<RankingKey, Array<{ query: string; score: number }>>;
+    ) as Record<AiRankingKey, Array<{ query: string; score: number }>>;
 
     const baseScoreMap = Object.values(filteredLists)
       .flat()
@@ -736,7 +876,7 @@ export const generateRankings = async () => {
     });
 
     const generatedAt = new Date().toISOString();
-    const buildBucket = (key: RankingKey): RankingBucket => {
+    const buildBucket = (key: AiRankingKey): RankingBucket => {
       const candidates = filteredLists[key]
         .map((item) => {
           const score = normalizedScores.get(item.query) ?? item.score;
@@ -787,6 +927,18 @@ export const generateRankings = async () => {
         yearly: buildBucket("yearly"),
         monthly: buildBucket("monthly"),
         daily: buildBucket("daily"),
+        bili_hot: {
+          key: "bili_hot",
+          generatedAt,
+          total: biliData.hot.length,
+          items: biliData.hot,
+        },
+        bili_schedule: {
+          key: "bili_schedule",
+          generatedAt,
+          total: biliData.schedule.length,
+          items: biliData.schedule,
+        },
       },
     } satisfies RankingDataset;
 
@@ -794,6 +946,8 @@ export const generateRankings = async () => {
       yearly: dataset.rankings.yearly.total,
       monthly: dataset.rankings.monthly.total,
       daily: dataset.rankings.daily.total,
+      biliHot: dataset.rankings.bili_hot.total,
+      biliSchedule: dataset.rankings.bili_schedule.total,
       generatedAt,
     });
 
