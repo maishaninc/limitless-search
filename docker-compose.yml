@@ -112,17 +112,19 @@ services:
       # 触发 /api/rankings/sync 的鉴权令牌，务必修改
       - AI_RANKINGS_SYNC_TOKEN=change-this-token
       # 年榜提示词：要求输出 JSON { items: [{ query, score }] }
-      - AI_RANKINGS_PROMPT_YEARLY=You are an anime ranking researcher. Focus on Japanese anime first and Mainland Chinese animation second. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. Generate at least 20 current-year upcoming anime titles. Exclude live action, games, adult content, illegal content, and non-anime topics.
+      - AI_RANKINGS_PROMPT_YEARLY=你是动漫年度预告榜研究员。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文动漫名","score":88.5}] }。请生成至少20个“当前年份内高热度、可信来源可验证”的预告动漫。优先日漫，其次中国大陆动画。优先参考 bilibili、Bangumi、AniList、MyAnimeList、Niconico、X/Twitter 等平台讨论热度。query 优先简体中文名，score 为 0-100 数值。
       # 月榜提示词：要求输出 JSON { items: [{ query, score }] }
-      - AI_RANKINGS_PROMPT_MONTHLY=You are an anime seasonal ranking researcher. Focus on Japanese anime first and Mainland Chinese animation second. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. Generate at least 20 titles for the current month seasonal anime ranking. Scores must be 0-100.
+      - AI_RANKINGS_PROMPT_MONTHLY=你是动漫当月新番榜研究员。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文动漫名","score":88.5}] }。请生成至少20个“与当前月份相关、在播或当月上新”的动漫。优先日漫，其次中国大陆动画。优先参考 bilibili、Bangumi、AniList、MyAnimeList、Niconico、X/Twitter 等平台信号。query 优先简体中文名，score 为 0-100 数值。
       # 日榜提示词：要求输出 JSON { items: [{ query, score }] }
-      - AI_RANKINGS_PROMPT_DAILY=You are an anime hot-topic ranking researcher. Focus on Japanese anime first and Mainland Chinese animation second. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. Generate at least 20 titles for today's hottest anime ranking based on broad public attention and likely search demand.
+      - AI_RANKINGS_PROMPT_DAILY=你是动漫当日热榜研究员。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文动漫名","score":88.5}] }。请生成至少20个“今日真正热门且已上映/在播/可观看”的动漫，禁止把纯未开播未来作品放入当日榜。优先日漫，其次中国大陆动画。优先参考 bilibili、Bangumi、AniList、MyAnimeList、Niconico、X/Twitter 等平台。query 优先简体中文名，score 为 0-100 数值。
       # 违规词审查提示词：要求输出 JSON { blocked: [] }
-      - AI_RANKINGS_PROMPT_MODERATION=You are a safety reviewer. Return strict JSON only in shape {"blocked":[string]}. Mark titles that are pornographic, hateful, extremist, scam-like, illegal, or clearly unrelated to anime. Keep safe anime titles unblocked.
+      - AI_RANKINGS_PROMPT_MODERATION=你是榜单安全审查器。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"blocked":["条目A"]} 或 {"blocked":[]}。请拦截涉黄、仇恨、极端、诈骗、违法、明显非动漫或低可信条目。
       # 多语言翻译提示词：要求输出 JSON { items: [{ query, titles }] }
-      - AI_RANKINGS_PROMPT_TRANSLATE=You are a multilingual anime title translator. Return strict JSON only in shape {"items":[{"query":string,"titles":{"zh-CN":string,"zh-TW":string,"en":string,"ja":string,"ru":string,"fr":string}}]}. Use natural official or search-friendly titles for each locale.
+      - AI_RANKINGS_PROMPT_TRANSLATE=你是动漫多语言翻译器。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文名","titles":{"zh-CN":"...","zh-TW":"...","en":"...","ja":"...","ru":"...","fr":"..."}}]}。要求：query 与 zh-CN 优先使用简体中文常用名，其他语言做自然准确翻译。
       # 统一评分提示词：要求输出 JSON { items: [{ query, score }] }
-      - AI_RANKINGS_PROMPT_SCORE=You are an anime ranking score normalizer. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. When the same anime appears across yearly, monthly, or daily lists, assign one consistent final score from 0 to 100.
+      - AI_RANKINGS_PROMPT_SCORE=你是动漫榜单统一评分器。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文名","score":85.2}]}。要求同名作品在年榜/月榜/日榜分数一致，score 为 0-100 数值。
+      # 榜单校验提示词：用于过滤错误条目并保证日榜为已上映/在播内容
+      - AI_RANKINGS_PROMPT_VERIFY=你是动漫榜单质量审核器。必须只输出一个合法 JSON 对象，不要输出 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文动漫名","score":88.5}],"removed":["被移除条目"]}。审核规则：1) 只保留真实存在的动漫作品；2) 删除非动漫、重复、低置信度、歧义严重条目；3) daily 当日热榜必须只保留已上映/在播/当前可观看作品，删除纯未来未开播作品；4) monthly 当月新番优先当月相关上新与在播新番；5) yearly 年度预告允许未上映，但必须是当年高关注且信息可信；6) query 优先简体中文名称；7) score 必须为 0-100 数值；8) 若删除后不足，不要编造，保留高置信条目并写入 removed。
     networks:
       - limitless-network
 

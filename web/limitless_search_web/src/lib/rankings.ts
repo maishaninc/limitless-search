@@ -55,6 +55,12 @@ type TranslationResult = {
   }>;
 };
 
+type VerificationResult = {
+  items?: AiGeneratedItem[];
+  removed?: string[];
+  reason?: string;
+};
+
 const localeList: RankingLocale[] = ["zh-CN", "zh-TW", "en", "ja", "ru", "fr"];
 let generationPromise: Promise<RankingDataset> | null = null;
 let lastGenerationFailureAt = 0;
@@ -369,13 +375,15 @@ const defaultListPrompt = (label: string, minItems: number, year: number, month:
   [
     "You are an anime ranking researcher.",
     "Focus on Japanese anime first and Mainland Chinese animation second.",
+    "Prioritize reliable platform signals from Bilibili, Bangumi, AniList, MyAnimeList, Niconico, X/Twitter trends, and major streaming discussions.",
     "Output MUST be valid JSON object only. No markdown, no code block, no explanation.",
     "Use EXACT output format:",
     '{"items":[{"query":"Title A","score":88.5},{"query":"Title B","score":76}]}',
     `Generate at least ${minItems} items for ${label}.`,
     `Current year is ${year}, current month is ${month}.`,
     "Only include anime titles. Exclude live action, games, adult content, illegal content, unrelated topics.",
-    "query must be a concise search-friendly anime title string.",
+    "query must be Simplified Chinese anime title whenever possible.",
+    "For daily hot ranking, only include titles that are already released/airing/currently watchable. Do NOT include unreleased future-only titles.",
     "score must be numeric (0-100).",
     "Do not use placeholders like string/number in JSON values.",
   ].join(" ");
@@ -395,6 +403,7 @@ const defaultTranslationPrompt =
     "Output MUST be valid JSON object only.",
     "Use EXACT output format:",
     '{"items":[{"query":"title","titles":{"zh-CN":"...","zh-TW":"...","en":"...","ja":"...","ru":"...","fr":"..."}}]}',
+    "zh-CN must be the preferred primary title used for search query when available.",
     "Translate naturally and keep official names where appropriate.",
   ].join(" ");
 
@@ -405,6 +414,20 @@ const defaultScorePrompt =
     "Use EXACT output format:",
     '{"items":[{"query":"title","score":85.2}]}',
     "Normalize duplicated or cross-list titles so the same title has one consistent final score from 0 to 100.",
+  ].join(" ");
+
+const defaultVerifyPrompt =
+  [
+    "You are an anime ranking quality verifier.",
+    "Output MUST be valid JSON object only.",
+    "Use EXACT output format:",
+    '{"items":[{"query":"title","score":80}],"removed":["title x"]}',
+    "Rules:",
+    "1) Keep only real anime titles.",
+    "2) Remove unrelated, duplicated, or low-confidence items.",
+    "3) For daily hot ranking: remove titles not released/airing yet.",
+    "4) Prefer Simplified Chinese title in query field when possible.",
+    "5) Preserve numeric score in 0-100 range.",
   ].join(" ");
 
 const strictJsonContract = [
@@ -532,6 +555,56 @@ const generateRawList = async (key: RankingKey, year: number, month: number, min
   return callAiJson<AiGeneratedList>(systemPrompt, userPrompt);
 };
 
+const verifyRankingList = async (
+  key: RankingKey,
+  items: Array<{ query: string; score: number }>,
+  year: number,
+  month: number,
+) => {
+  const systemPrompt = getPrompt(
+    "AI_RANKINGS_PROMPT_VERIFY",
+    defaultVerifyPrompt,
+    `ranking verification for ${key}`,
+  );
+
+  const verification = await callAiJson<VerificationResult>(
+    systemPrompt,
+    JSON.stringify({
+      rankingType: key,
+      year,
+      month,
+      candidates: items,
+      constraints:
+        key === "daily"
+          ? "daily list must only include released or airing anime"
+          : key === "monthly"
+            ? "monthly list should focus on current month seasonal anime"
+            : "yearly list should focus on current-year anticipated titles",
+    }),
+  );
+
+  return sanitizeGeneratedItems(verification.items || [], items.length || 20);
+};
+
+const ensureVerifiedList = async (
+  key: RankingKey,
+  initialItems: Array<{ query: string; score: number }>,
+  year: number,
+  month: number,
+  minItems: number,
+) => {
+  const required = targetItemCount(minItems);
+  let verified = await verifyRankingList(key, initialItems, year, month);
+
+  for (let round = 1; round <= 2 && verified.length < required; round += 1) {
+    const fallbackItems = await fillRankingList(key, year, month, required + round * 8);
+    const merged = mergeCandidateItems(verified, fallbackItems, required + round * 12);
+    verified = await verifyRankingList(key, merged, year, month);
+  }
+
+  return verified.slice(0, required);
+};
+
 const moderateQueries = async (queries: string[]) => {
   const systemPrompt = getPrompt(
     "AI_RANKINGS_PROMPT_MODERATION",
@@ -618,10 +691,16 @@ export const generateRankings = async () => {
       daily: dailyItems.length,
     });
 
+    const [yearlyVerified, monthlyVerified, dailyVerified] = await Promise.all([
+      ensureVerifiedList("yearly", yearlyItems, year, month, minItems),
+      ensureVerifiedList("monthly", monthlyItems, year, month, minItems),
+      ensureVerifiedList("daily", dailyItems, year, month, minItems),
+    ]);
+
     const rawLists = {
-      yearly: yearlyItems,
-      monthly: monthlyItems,
-      daily: dailyItems,
+      yearly: yearlyVerified,
+      monthly: monthlyVerified,
+      daily: dailyVerified,
     } satisfies Record<RankingKey, Array<{ query: string; score: number }>>;
 
     const allQueries = Array.from(new Set(Object.values(rawLists).flatMap((list) => list.map((item) => item.query))));
@@ -658,7 +737,7 @@ export const generateRankings = async () => {
 
     const generatedAt = new Date().toISOString();
     const buildBucket = (key: RankingKey): RankingBucket => {
-      const items = filteredLists[key]
+      const candidates = filteredLists[key]
         .map((item) => {
           const score = normalizedScores.get(item.query) ?? item.score;
           const titles = translations.get(item.query) || {
@@ -670,15 +749,27 @@ export const generateRankings = async () => {
             fr: item.query,
           };
 
+          const primaryQuery = (titles["zh-CN"] || item.query).trim();
+
           return {
-            id: toId(item.query),
-            query: item.query,
+            id: toId(primaryQuery),
+            query: primaryQuery,
             score: normalizeScore(score),
             titles,
           } satisfies RankingItem;
         })
-        .sort((a, b) => b.score - a.score)
-        .slice(0, targetItemCount(minItems));
+        .sort((a, b) => b.score - a.score);
+
+      const dedupMap = new Map<string, RankingItem>();
+      for (const item of candidates) {
+        const dedupKey = item.query.trim().toLowerCase();
+        const current = dedupMap.get(dedupKey);
+        if (!current || item.score > current.score) {
+          dedupMap.set(dedupKey, item);
+        }
+      }
+
+      const items = Array.from(dedupMap.values()).slice(0, targetItemCount(minItems));
 
       return {
         key,

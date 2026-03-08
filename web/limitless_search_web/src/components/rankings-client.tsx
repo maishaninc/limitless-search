@@ -172,23 +172,27 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
               <div className="px-6 py-12 text-center text-neutral-500">{ui.empty}</div>
             ) : (
               <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                {visibleItems.map((item, index) => (
+                {visibleItems.map((item, index) => {
+                  const localizedQuery = (item.titles[titleLocale] || item.query).trim();
+
+                  return (
                   <Link
                     key={`${item.id}-${index}`}
-                    href={`/?q=${encodeURIComponent(item.query)}&auto=1`}
+                    href={`/?q=${encodeURIComponent(localizedQuery)}`}
                     className="grid grid-cols-[1fr_auto] gap-4 px-6 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-950/30 transition-colors"
                   >
                     <div className="min-w-0">
                       <div className="text-sm text-neutral-500 mb-1">#{index + 1}</div>
                       <div className="text-base md:text-lg font-semibold text-neutral-900 dark:text-white truncate">
-                        {item.titles[titleLocale] || item.query}
+                        {localizedQuery}
                       </div>
                     </div>
                     <div className="self-center text-lg font-black text-neutral-900 dark:text-white">
                       {item.score.toFixed(1)}
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
 

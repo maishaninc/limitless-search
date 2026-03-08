@@ -260,7 +260,6 @@ export default function HomeClient({ initialLanguage, showRankings = false }: Ho
   const [showSourcePicker, setShowSourcePicker] = useState(false);
   const [showDrivePicker, setShowDrivePicker] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [autoSubmittedQuery, setAutoSubmittedQuery] = useState<string | null>(null);
 
   const FILTER_TAGS = [
     "1080p",
@@ -560,25 +559,11 @@ export default function HomeClient({ initialLanguage, showRankings = false }: Ho
 
   React.useEffect(() => {
     const initialQuery = searchParams.get("q")?.trim() || "";
-    const shouldAutoSearch = searchParams.get("auto") === "1";
 
     if (!initialQuery) return;
 
     setQuery((current) => (current ? current : initialQuery));
-
-    if (shouldAutoSearch && autoSubmittedQuery !== initialQuery) {
-      setAutoSubmittedQuery(initialQuery);
-    }
-  }, [autoSubmittedQuery, searchParams]);
-
-  React.useEffect(() => {
-    if (!autoSubmittedQuery) return;
-    if (query.trim() !== autoSubmittedQuery) return;
-    if (loading) return;
-
-    setAutoSubmittedQuery(null);
-    performSearch();
-  }, [autoSubmittedQuery, loading, query]);
+  }, [searchParams]);
 
   React.useEffect(() => {
     setCurrentPage(1);
