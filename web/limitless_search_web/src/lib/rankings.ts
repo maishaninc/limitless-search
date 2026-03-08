@@ -56,6 +56,8 @@ type TranslationResult = {
 };
 
 const localeList: RankingLocale[] = ["zh-CN", "zh-TW", "en", "ja", "ru", "fr"];
+let generationPromise: Promise<RankingDataset> | null = null;
+let lastGenerationFailureAt = 0;
 
 const normalizeScore = (value: number) => {
   if (!Number.isFinite(value)) return 0;
@@ -125,8 +127,45 @@ export const ensureRankingDataset = async (): Promise<RankingDataset | null> => 
   const existing = await readRankingDataset();
   if (existing) return existing;
 
+  if (generationPromise) {
+    try {
+      return await generationPromise;
+    } catch {
+      return null;
+    }
+  }
+
+  const cooldownMs = Math.max(
+    0,
+    Number(process.env.AI_RANKINGS_RETRY_COOLDOWN_MS || 300000),
+  );
+
+  if (lastGenerationFailureAt > 0 && Date.now() - lastGenerationFailureAt < cooldownMs) {
+    logRankings("pipeline", "skip auto-generation due to cooldown", {
+      cooldownMs,
+      nextTryInMs: cooldownMs - (Date.now() - lastGenerationFailureAt),
+    });
+    return null;
+  }
+
+  generationPromise = (async () => {
+    try {
+      const dataset = await generateAndStoreRankings();
+      lastGenerationFailureAt = 0;
+      return dataset;
+    } catch (error) {
+      lastGenerationFailureAt = Date.now();
+      logRankingsError("pipeline", error, {
+        reason: "ensureRankingDataset failed",
+      });
+      throw error;
+    } finally {
+      generationPromise = null;
+    }
+  })();
+
   try {
-    return await generateAndStoreRankings();
+    return await generationPromise;
   } catch {
     return null;
   }
@@ -330,24 +369,64 @@ const defaultListPrompt = (label: string, minItems: number, year: number, month:
   [
     "You are an anime ranking researcher.",
     "Focus on Japanese anime first and Mainland Chinese animation second.",
-    "Return strict JSON only in shape {\"items\":[{\"query\":string,\"score\":number}] }.",
+    "Output MUST be valid JSON object only. No markdown, no code block, no explanation.",
+    "Use EXACT output format:",
+    '{"items":[{"query":"Title A","score":88.5},{"query":"Title B","score":76}]}',
     `Generate at least ${minItems} items for ${label}.`,
     `Current year is ${year}, current month is ${month}.`,
-    "Only include anime titles. No live action, no games, no adult content, no illegal phrases.",
-    "query must be a concise search-friendly title.",
-    "score must be 0-100 and reflect heat/attention.",
+    "Only include anime titles. Exclude live action, games, adult content, illegal content, unrelated topics.",
+    "query must be a concise search-friendly anime title string.",
+    "score must be numeric (0-100).",
+    "Do not use placeholders like string/number in JSON values.",
   ].join(" ");
 
 const defaultModerationPrompt =
-  "You are a safety and compliance reviewer. Return strict JSON only in shape {\"blocked\":[string]}. Block titles that are illegal, pornographic, hateful, violent-extremist, scam-like, or clearly unrelated to anime. If all are safe return an empty array.";
+  [
+    "You are a safety and compliance reviewer.",
+    "Output MUST be valid JSON object only.",
+    "Use EXACT output format:",
+    '{"blocked":["example title"]} or {"blocked":[]}',
+    "Block titles that are illegal, pornographic, hateful, violent-extremist, scam-like, or clearly unrelated to anime.",
+  ].join(" ");
 
 const defaultTranslationPrompt =
-  "You are a multilingual anime title translator. Return strict JSON only in shape {\"items\":[{\"query\":string,\"titles\":{\"zh-CN\":string,\"zh-TW\":string,\"en\":string,\"ja\":string,\"ru\":string,\"fr\":string}}]}. Translate titles naturally and keep official names where appropriate.";
+  [
+    "You are a multilingual anime title translator.",
+    "Output MUST be valid JSON object only.",
+    "Use EXACT output format:",
+    '{"items":[{"query":"title","titles":{"zh-CN":"...","zh-TW":"...","en":"...","ja":"...","ru":"...","fr":"..."}}]}',
+    "Translate naturally and keep official names where appropriate.",
+  ].join(" ");
 
 const defaultScorePrompt =
-  "You are an anime ranking score normalizer. Return strict JSON only in shape {\"items\":[{\"query\":string,\"score\":number}]}. Normalize duplicated or cross-list titles so the same title has one consistent final score from 0 to 100.";
+  [
+    "You are an anime ranking score normalizer.",
+    "Output MUST be valid JSON object only.",
+    "Use EXACT output format:",
+    '{"items":[{"query":"title","score":85.2}]}',
+    "Normalize duplicated or cross-list titles so the same title has one consistent final score from 0 to 100.",
+  ].join(" ");
 
-const getPrompt = (name: string, fallback: string) => process.env[name]?.trim() || fallback;
+const strictJsonContract = [
+  "GLOBAL OUTPUT CONTRACT:",
+  "1) Return exactly one JSON object.",
+  "2) Do NOT return markdown, code fences, comments, or explanation.",
+  "3) Do NOT include trailing commas.",
+  "4) All keys and string values must use double quotes.",
+  "5) If uncertain, still return a valid JSON object with best effort values.",
+].join(" ");
+
+const withStrictContract = (purpose: string, prompt: string) =>
+  [
+    `TASK: ${purpose}.`,
+    strictJsonContract,
+    prompt,
+  ].join(" ");
+
+const getPrompt = (name: string, fallback: string, purpose: string) => {
+  const custom = process.env[name]?.trim();
+  return withStrictContract(purpose, custom || fallback);
+};
 
 const targetItemCount = (minItems: number) => Math.max(20, minItems);
 
@@ -407,6 +486,7 @@ const fillRankingList = async (key: RankingKey, year: number, month: number, min
           ? "AI_RANKINGS_PROMPT_MONTHLY"
           : "AI_RANKINGS_PROMPT_DAILY",
       defaultListPrompt(label, limit, year, month),
+      `ranking list refill for ${label}`,
     );
 
     const refill = await callAiJson<AiGeneratedList>(
@@ -420,7 +500,7 @@ const fillRankingList = async (key: RankingKey, year: number, month: number, min
         missing,
         exclude: existingQueries,
         instruction:
-          "Return only new anime titles not present in exclude. Do not repeat any existing title. Keep returning enough new anime to reach the target count.",
+          "Return valid JSON only. Return only new anime titles not present in exclude. Do not repeat existing titles. Keep returning enough new anime to reach target count.",
       }),
     );
 
@@ -445,6 +525,7 @@ const generateRawList = async (key: RankingKey, year: number, month: number, min
         ? "AI_RANKINGS_PROMPT_MONTHLY"
         : "AI_RANKINGS_PROMPT_DAILY",
     defaultListPrompt(label, minItems, year, month),
+    `ranking list generation for ${label}`,
   );
 
   const userPrompt = JSON.stringify({ year, month, minItems, label });
@@ -452,13 +533,21 @@ const generateRawList = async (key: RankingKey, year: number, month: number, min
 };
 
 const moderateQueries = async (queries: string[]) => {
-  const systemPrompt = getPrompt("AI_RANKINGS_PROMPT_MODERATION", defaultModerationPrompt);
+  const systemPrompt = getPrompt(
+    "AI_RANKINGS_PROMPT_MODERATION",
+    defaultModerationPrompt,
+    "ranking moderation",
+  );
   const result = await callAiJson<ModerationResult>(systemPrompt, JSON.stringify({ queries }));
   return new Set((result.blocked || []).map((entry) => entry.trim().toLowerCase()));
 };
 
 const unifyScores = async (queries: string[], scoreMap: Record<string, number>) => {
-  const systemPrompt = getPrompt("AI_RANKINGS_PROMPT_SCORE", defaultScorePrompt);
+  const systemPrompt = getPrompt(
+    "AI_RANKINGS_PROMPT_SCORE",
+    defaultScorePrompt,
+    "ranking score normalization",
+  );
   const result = await callAiJson<ScoreResult>(systemPrompt, JSON.stringify({ items: queries.map((query) => ({ query, score: scoreMap[query] ?? 0 })) }));
   const next = new Map<string, number>();
 
@@ -472,7 +561,11 @@ const unifyScores = async (queries: string[], scoreMap: Record<string, number>) 
 };
 
 const translateQueries = async (queries: string[]) => {
-  const systemPrompt = getPrompt("AI_RANKINGS_PROMPT_TRANSLATE", defaultTranslationPrompt);
+  const systemPrompt = getPrompt(
+    "AI_RANKINGS_PROMPT_TRANSLATE",
+    defaultTranslationPrompt,
+    "ranking title translation",
+  );
   const result = await callAiJson<TranslationResult>(systemPrompt, JSON.stringify({ queries, locales: localeList }));
   const next = new Map<string, RankingTitles>();
 
