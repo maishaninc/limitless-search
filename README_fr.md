@@ -157,11 +157,12 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 
 ## 🆕 Mise à jour de version
 
-### Changements récents
+### Changements récents (2026-03-08)
 
-- Les variables d'environnement du frontend ont été déplacées de `web/limitless_search_web/.env` vers le `docker-compose.yml` racine, sous `web.build.args` et `web.environment`
-- L'accès backend côté serveur Next.js utilise désormais `API_BASE`, afin d'éviter d'exposer des adresses internes de conteneur via `NEXT_PUBLIC_*`
-- L'intégration hCaptcha a été corrigée : rendu explicite côté frontend, gestion des erreurs/expiration ajoutée, et vérification serveur mise à jour vers `https://api.hcaptcha.com/siteverify`
+- Les variables d'environnement du frontend sont désormais configurées dans le service `web` du `docker-compose.yml` racine
+- Le frontend ne dépend plus par défaut de `web/limitless_search_web/.env`
+- Le proxy backend côté serveur Next.js utilise maintenant `API_BASE`
+- Correction du rendu frontend hCaptcha et de la vérification côté serveur
 
 ### Mise à jour du déploiement Docker (recommandé)
 

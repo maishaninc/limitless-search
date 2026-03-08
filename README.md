@@ -156,11 +156,12 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 
 ## 🆕 版本更新
 
-### 最近更新
+### 最近更新（2026-03-08）
 
-- 前端环境变量已从 `web/limitless_search_web/.env` 迁移到根目录 `docker-compose.yml` 的 `web.build.args` 与 `web.environment`
-- 将 Next.js 服务端访问后端的地址调整为 `API_BASE`，避免将容器内地址暴露为 `NEXT_PUBLIC_*`
-- 修复 hCaptcha 集成问题：前端改为显式渲染并补充错误/过期处理，服务端校验地址改为 `https://api.hcaptcha.com/siteverify`
+- 前端环境变量统一改为在根目录 `docker-compose.yml` 的 `web` 服务中配置
+- 前端默认不再依赖 `web/limitless_search_web/.env`
+- Next.js 服务端代理后端地址改为使用 `API_BASE`
+- 修复 hCaptcha 前端渲染与服务端校验问题
 
 ### Docker 部署更新（推荐）
 

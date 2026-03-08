@@ -157,11 +157,12 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 
 ## 🆕 バージョン更新
 
-### 最近の更新
+### 最近の更新（2026-03-08）
 
-- フロントエンド環境変数を `web/limitless_search_web/.env` からルート `docker-compose.yml` の `web.build.args` と `web.environment` に移行
-- Next.js サーバールートが使うバックエンド接続先を `API_BASE` に変更し、コンテナ内部アドレスを `NEXT_PUBLIC_*` で公開しない構成に整理
-- hCaptcha 連携を修正し、フロントエンドを明示レンダリングに変更、エラー/期限切れ処理を追加、サーバー側検証先を `https://api.hcaptcha.com/siteverify` に更新
+- フロントエンド環境変数はルート `docker-compose.yml` の `web` サービスで統一して設定
+- フロントエンドは既定で `web/limitless_search_web/.env` に依存しない構成へ変更
+- Next.js サーバー側プロキシのバックエンド接続先を `API_BASE` に統一
+- hCaptcha のフロントエンド描画とサーバー側検証の問題を修正
 
 ### Dockerデプロイ更新（推奨）
 
