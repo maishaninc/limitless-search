@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getRankingLandingUrls, readRankingDataset, rankingsEnabled } from "@/lib/rankings";
+import { getRankingLandingUrls, readRankingDataset } from "@/lib/rankings";
+import { rankingsEnabled } from "@/lib/rankings-config";
 
 const siteUrl = "https://search.freeanime.org";
 

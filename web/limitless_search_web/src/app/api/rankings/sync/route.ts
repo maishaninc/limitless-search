@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateAndStoreRankings, rankingsEnabled } from "@/lib/rankings";
+import { generateAndStoreRankings } from "@/lib/rankings";
+import { rankingsEnabled } from "@/lib/rankings-config";
 
 export const dynamic = "force-dynamic";
 
