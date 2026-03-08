@@ -499,6 +499,9 @@ const fetchBiliRankings = async (minItems: number) => {
     "https://www.bilibili.com/v/popular/rank/anime";
   const scheduleUrl =
     process.env.AI_RANKINGS_BILIBILI_SCHEDULE_URL ||
+    "https://api.bilibili.com/pgc/web/timeline/v2";
+  const scheduleAltUrl =
+    process.env.AI_RANKINGS_BILIBILI_SCHEDULE_ALT_URL ||
     "https://api.bilibili.com/pgc/web/timeline?types=1";
   const animePageUrl =
     process.env.AI_RANKINGS_BILIBILI_ANIME_PAGE_URL ||
@@ -510,7 +513,7 @@ const fetchBiliRankings = async (minItems: number) => {
     process.env.AI_RANKINGS_BILIBILI_USER_AGENT ||
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
 
-  const [rankResp, rankRegionResp, rankPageResp, scheduleResp, hotResp, animePageResp] = await Promise.all([
+  const [rankResp, rankRegionResp, rankPageResp, scheduleResp, scheduleAltResp, hotResp, animePageResp] = await Promise.all([
     fetch(rankUrl, {
       headers: {
         "user-agent": userAgent,
@@ -538,6 +541,13 @@ const fetchBiliRankings = async (minItems: number) => {
       },
       cache: "no-store",
     }),
+    fetch(scheduleAltUrl, {
+      headers: {
+        "user-agent": userAgent,
+        referer: "https://www.bilibili.com/anime",
+      },
+      cache: "no-store",
+    }),
     fetch(hotBangumiUrl, {
       headers: {
         "user-agent": userAgent,
@@ -556,6 +566,7 @@ const fetchBiliRankings = async (minItems: number) => {
   const rankJson = rankResp.ok ? ((await rankResp.json()) as any) : null;
   const rankRegionJson = rankRegionResp.ok ? ((await rankRegionResp.json()) as any) : null;
   const scheduleJson = scheduleResp.ok ? ((await scheduleResp.json()) as any) : null;
+  const scheduleAltJson = scheduleAltResp.ok ? ((await scheduleAltResp.json()) as any) : null;
   const hotJson = hotResp.ok ? ((await hotResp.json()) as any) : null;
   const rankPageHtml = rankPageResp.ok ? await rankPageResp.text() : "";
   const animePageHtml = animePageResp.ok ? await animePageResp.text() : "";
@@ -575,6 +586,61 @@ const fetchBiliRankings = async (minItems: number) => {
     return titles;
   };
 
+  const collectObjects = (input: unknown, max = 4000) => {
+    const queue: unknown[] = [input];
+    const out: Record<string, unknown>[] = [];
+
+    while (queue.length && out.length < max) {
+      const current = queue.shift();
+      if (!current) continue;
+      if (Array.isArray(current)) {
+        queue.push(...current);
+        continue;
+      }
+      if (typeof current === "object") {
+        const record = current as Record<string, unknown>;
+        out.push(record);
+        queue.push(...Object.values(record));
+      }
+    }
+
+    return out;
+  };
+
+  const extractTitleItems = (
+    source: unknown,
+    scoreFrom: (entry: Record<string, unknown>, index: number) => number,
+    url: string,
+    withTime = false,
+  ) => {
+    const objects = collectObjects(source);
+    const result: RankingItem[] = [];
+
+    for (let i = 0; i < objects.length; i += 1) {
+      const entry = objects[i];
+      const title =
+        (entry.title as string) ||
+        (entry.season_title as string) ||
+        (entry.square_cover_title as string) ||
+        (entry.name as string) ||
+        "";
+      const query = `${title}`.trim();
+      if (!query || query.length < 2) continue;
+
+      const displayTime =
+        `${entry.pub_time || entry.pub_index_show || entry.pub_index || entry.date || ""}`.trim();
+
+      result.push(
+        mapRankItem(query, scoreFrom(entry, i), {
+          sourceUrl: (entry.url as string) || (entry.share_url as string) || url,
+          ...(withTime && displayTime ? { displayTime } : {}),
+        }),
+      );
+    }
+
+    return result;
+  };
+
   const parsePageItems = (html: string) => {
     const initialState =
       html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\//)?.[1] ||
@@ -590,9 +656,9 @@ const fetchBiliRankings = async (minItems: number) => {
   };
 
   const rankItems = [
-    ...((rankJson?.data?.list || rankJson?.data || []) as any[]),
-    ...((rankRegionJson?.data || rankRegionJson?.data?.list || []) as any[]),
-    ...parsePageItems(rankPageHtml),
+    ...extractTitleItems(rankJson?.data?.list || rankJson?.data || [], (entry) => Number(entry?.stat?.view || entry?.play || 0), "https://www.bilibili.com/v/popular/rank/anime"),
+    ...extractTitleItems(rankRegionJson?.data?.list || rankRegionJson?.data || [], (entry) => Number(entry?.stat?.view || entry?.play || 0), "https://www.bilibili.com/v/popular/rank/anime"),
+    ...extractTitleItems(parsePageItems(rankPageHtml), (_entry, idx) => 200 - idx, "https://www.bilibili.com/v/popular/rank/anime"),
   ];
 
   const rankTitlesFromPage = parseTitlesFromHtml(rankPageHtml, /"title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g, 120)
@@ -606,37 +672,13 @@ const fetchBiliRankings = async (minItems: number) => {
     });
   }
 
-  const maxPlay = Math.max(
-    1,
-    ...rankItems.map((item) => Number(item?.stat?.view ?? item?.play ?? 0)),
+  const rankMerged = [...rankItems, ...rankTitlesFromPage];
+
+  const biliHotItems = extractTitleItems(
+    hotJson?.result?.list || hotJson?.data?.list || hotJson,
+    (entry, idx) => Number(entry?.stat?.follow || entry?.follows || 200 - idx),
+    "https://www.bilibili.com/anime",
   );
-
-  const biliRankItems = rankItems
-    .map((item) => {
-      const title = (item?.title || item?.name || "").trim();
-      if (!title) return null;
-      const play = Number(item?.stat?.view ?? item?.play ?? 0);
-      return mapRankItem(title, toBiliScore(play, maxPlay), {
-        sourceUrl: item?.short_link_v2 || item?.short_link || item?.uri || "https://www.bilibili.com/v/popular/rank/anime",
-      });
-    })
-    .filter(Boolean) as RankingItem[];
-
-  const rankMerged = [...biliRankItems, ...rankTitlesFromPage];
-
-  const hotRaw = (hotJson?.result?.list || hotJson?.data?.list || []) as any[];
-  const maxHotFollow = Math.max(1, ...hotRaw.map((item) => Number(item?.stat?.follow || item?.follows || 0)));
-
-  const biliHotItems = hotRaw
-    .map((item) => {
-      const title = (item?.title || item?.season_title || "").trim();
-      if (!title) return null;
-      const follows = Number(item?.stat?.follow || item?.follows || 0);
-      return mapRankItem(title, toBiliScore(follows, maxHotFollow), {
-        sourceUrl: item?.url || item?.share_url || "https://www.bilibili.com/anime",
-      });
-    })
-    .filter(Boolean) as RankingItem[];
 
   const hotTitlesFromPage = parseTitlesFromHtml(animePageHtml, /"season_title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g, 120)
     .map((title, idx) => mapRankItem(title, toBiliScore(120 - idx, 120), { sourceUrl: "https://www.bilibili.com/anime" }));
@@ -644,8 +686,11 @@ const fetchBiliRankings = async (minItems: number) => {
   const hotMerged = [...biliHotItems, ...hotTitlesFromPage];
 
   const scheduleRaw = [
-    ...((scheduleJson?.result?.latest || []) as any[]),
-    ...((scheduleJson?.result?.timeline || []) as any[]),
+    ...(extractTitleItems(scheduleJson?.result?.latest || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
+    ...(extractTitleItems(scheduleJson?.result?.timeline || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
+    ...(extractTitleItems(scheduleAltJson?.result?.latest || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
+    ...(extractTitleItems(scheduleAltJson?.result?.timeline || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
+    ...(extractTitleItems(scheduleJson?.result?.timeline || scheduleJson?.data || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
   ];
 
   const animeState =
@@ -654,36 +699,10 @@ const fetchBiliRankings = async (minItems: number) => {
   const animeParsed = animeState ? (safeJsonParse(animeState) as any) : null;
   const animeScheduleFallback = (animeParsed?.timeline?.latest || animeParsed?.timeline?.items || []) as any[];
 
-  const mergedScheduleRaw = [...scheduleRaw, ...animeScheduleFallback];
-  const maxFollow = Math.max(
-    1,
-    ...mergedScheduleRaw.map((item) => Number(item?.follows || item?.pub_index || 0)),
-  );
-
-  const biliScheduleItems = mergedScheduleRaw
-    .flatMap((group: any) => {
-      const episodes = (group?.episodes || group?.seasons || group?.cards || []) as any[];
-      return episodes.map((episode: any) => {
-        const title = (episode?.title || episode?.square_cover_title || episode?.season_title || "").trim();
-        if (!title) return null;
-
-        const follows = Number(episode?.follows || group?.follows || episode?.stat?.follows || 0);
-        const pubTime =
-          episode?.pub_time ||
-          episode?.pub_ts ||
-          episode?.pub_index ||
-          episode?.pub_index_show ||
-          group?.pub_time ||
-          group?.date ||
-          "";
-
-        return mapRankItem(title, toBiliScore(follows, maxFollow), {
-          displayTime: `${pubTime}`.trim(),
-          sourceUrl: episode?.url || episode?.share_url || "https://www.bilibili.com/anime",
-        });
-      });
-    })
-    .filter(Boolean) as RankingItem[];
+  const biliScheduleItems = [
+    ...scheduleRaw,
+    ...extractTitleItems(animeScheduleFallback, (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true),
+  ];
 
   const scheduleTitleMatches = animePageHtml.matchAll(/"pub_index_show"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"[\s\S]*?"season_title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g);
   const scheduleFromPage = Array.from(scheduleTitleMatches)
