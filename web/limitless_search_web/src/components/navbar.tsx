@@ -5,16 +5,18 @@ import { Moon, Sun, Languages, Menu, X, ChevronDown, Check, Github } from "lucid
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage, languages } from "@/lib/i18n"
-import { rankingsNavEnabled } from "@/lib/rankings-config"
 import { cn } from "@/lib/utils"
 
-export function Navbar() {
+type NavbarProps = {
+  showRankings?: boolean
+}
+
+export function Navbar({ showRankings = false }: NavbarProps) {
   const { setTheme, resolvedTheme } = useTheme()
   const { language, setLanguage, t } = useLanguage()
   const [mounted, setMounted] = React.useState(false)
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [isLangOpen, setIsLangOpen] = React.useState(false)
-  const showRankings = rankingsNavEnabled()
 
   React.useEffect(() => {
     setMounted(true)

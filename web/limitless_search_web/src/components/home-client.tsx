@@ -217,9 +217,10 @@ type AiSuggestion = {
 
 type HomeClientProps = {
   initialLanguage: Language;
+  showRankings?: boolean;
 };
 
-export default function HomeClient({ initialLanguage }: HomeClientProps) {
+export default function HomeClient({ initialLanguage, showRankings = false }: HomeClientProps) {
   const searchParams = useSearchParams();
   const { t, language } = useLanguage();
   
@@ -1150,7 +1151,7 @@ export default function HomeClient({ initialLanguage }: HomeClientProps) {
         )}
       </AnimatePresence>
 
-      <Navbar />
+      <Navbar showRankings={showRankings} />
       
       <Hero>
         <form onSubmit={handleSearch} className="relative w-full" id="search-anchor-inline">

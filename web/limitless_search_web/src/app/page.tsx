@@ -4,7 +4,7 @@ import HomeClient from "@/components/home-client";
 import { LanguageInitializer } from "@/components/language-initializer";
 import { detectPreferredLanguage, languageToLocale, normalizeLanguage } from "@/lib/i18n";
 import { readRankingDataset } from "@/lib/rankings";
-import { rankingsEnabled } from "@/lib/rankings-config";
+import { rankingsEnabled, rankingsNavEnabled } from "@/lib/rankings-config";
 
 export const dynamic = "force-dynamic";
 
@@ -144,11 +144,12 @@ export default async function Page({
     ? normalizeLanguage(params.lang)
     : detectPreferredLanguage(requestHeaders.get("accept-language"));
   const rankingDataset = rankingsEnabled() ? await readRankingDataset() : null;
+  const showRankings = rankingsNavEnabled();
 
   return (
     <>
       <LanguageInitializer initialLanguage={initialLanguage} />
-      <HomeClient initialLanguage={initialLanguage} />
+      <HomeClient initialLanguage={initialLanguage} showRankings={showRankings} />
       {rankingDataset && params?.q ? (
         <script
           type="application/ld+json"
