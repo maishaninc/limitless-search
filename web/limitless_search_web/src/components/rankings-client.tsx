@@ -146,7 +146,6 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
       { key: "yearly" as const, label: ui.yearly(dataset.year) },
       { key: "monthly" as const, label: ui.monthly(dataset.month) },
       { key: "daily" as const, label: ui.daily },
-      { key: "bili_rank" as const, label: ui.biliRank },
     ],
     [dataset.month, dataset.year, ui],
   );
@@ -205,11 +204,11 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveKey("bili_hot");
+                  setActiveKey("bili_rank");
                   setBiliMenuOpen(false);
                 }}
                 className={`inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-colors ${
-                  activeKey === "bili_hot" || activeKey === "bili_schedule"
+                  activeKey === "bili_rank" || activeKey === "bili_hot" || activeKey === "bili_schedule"
                     ? "bg-black text-white dark:bg-white dark:text-black"
                     : "text-neutral-700 dark:text-neutral-200"
                 }`}
