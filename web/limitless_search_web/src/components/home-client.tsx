@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Search, ExternalLink, Lock, AlertCircle, Loader2, Clock, FileText, CheckCircle2, Filter, HardDrive, Magnet, Link as LinkIcon, X, ChevronLeft, ChevronRight, ChevronDown, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { About } from "@/components/about";
 import { Footer } from "@/components/footer";
-import { useLanguage } from "@/lib/i18n";
+import { type Language, useLanguage } from "@/lib/i18n";
 
 declare global {
   interface Window {
@@ -214,8 +215,13 @@ type AiSuggestion = {
   raw?: unknown;
 };
 
-export default function HomeClient() {
-  const { t, language } = useLanguage();
+type HomeClientProps = {
+  initialLanguage: Language;
+};
+
+export default function HomeClient({ initialLanguage }: HomeClientProps) {
+  const searchParams = useSearchParams();
+  const { t } = useLanguage();
   
   const CAPTCHA_PROVIDER = (process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER || "none").toLowerCase() as CaptchaProvider;
   const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
@@ -253,6 +259,7 @@ export default function HomeClient() {
   const [showSourcePicker, setShowSourcePicker] = useState(false);
   const [showDrivePicker, setShowDrivePicker] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [autoSubmittedQuery, setAutoSubmittedQuery] = useState<string | null>(null);
 
   const FILTER_TAGS = [
     "1080p",
@@ -549,6 +556,28 @@ export default function HomeClient() {
         .filter(Boolean),
     ),
   ).filter((type) => driveLabels[type]);
+
+  React.useEffect(() => {
+    const initialQuery = searchParams.get("q")?.trim() || "";
+    const shouldAutoSearch = searchParams.get("auto") === "1";
+
+    if (!initialQuery) return;
+
+    setQuery((current) => (current ? current : initialQuery));
+
+    if (shouldAutoSearch && autoSubmittedQuery !== initialQuery) {
+      setAutoSubmittedQuery(initialQuery);
+    }
+  }, [autoSubmittedQuery, searchParams]);
+
+  React.useEffect(() => {
+    if (!autoSubmittedQuery) return;
+    if (query.trim() !== autoSubmittedQuery) return;
+    if (loading) return;
+
+    setAutoSubmittedQuery(null);
+    performSearch();
+  }, [autoSubmittedQuery, loading, query]);
 
   React.useEffect(() => {
     setCurrentPage(1);

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import HomeClient from "@/components/home-client";
+import { LanguageInitializer } from "@/components/language-initializer";
+import { detectPreferredLanguage, languageToLocale, normalizeLanguage } from "@/lib/i18n";
+import { readRankingDataset } from "@/lib/rankings";
+import { rankingsEnabled } from "@/lib/rankings-config";
 
 export const dynamic = "force-dynamic";
 
@@ -51,26 +56,48 @@ const langMap: Record<string, LangConfig> = {
   },
 };
 
-const resolveLang = (value?: string) => {
-  if (!value) return "zh-CN";
-  const normalized = value.toLowerCase();
-  if (normalized === "zh" || normalized === "zh-cn" || normalized === "zh_cn") return "zh-CN";
-  if (normalized === "zh-tw" || normalized === "zh_tw") return "zh-TW";
-  if (normalized === "en") return "en";
-  if (normalized === "ja" || normalized === "jp") return "ja";
-  if (normalized === "ru") return "ru";
-  if (normalized === "fr") return "fr";
-  return "zh-CN";
-};
+const resolveLang = (value?: string) => languageToLocale(normalizeLanguage(value));
 
-export function generateMetadata({
+export async function generateMetadata({
   searchParams,
 }: {
-  searchParams?: { lang?: string };
-}): Metadata {
-  const lang = resolveLang(searchParams?.lang);
+  searchParams?: Promise<{ lang?: string; q?: string; auto?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const requestHeaders = await headers();
+  const lang = params?.lang
+    ? resolveLang(params.lang)
+    : languageToLocale(detectPreferredLanguage(requestHeaders.get("accept-language")));
   const config = langMap[lang];
   const langParam = `?lang=${encodeURIComponent(lang)}`;
+  const q = params?.q?.trim();
+
+  if (q) {
+    return {
+      title: `${q} | Limitless Search`,
+      description: `${q} - 进入 Limitless Search 首页并快速搜索相关动漫资源。`,
+      robots: {
+        index: true,
+        follow: true,
+      },
+      alternates: {
+        canonical: `/?q=${encodeURIComponent(q)}`,
+      },
+      openGraph: {
+        title: `${q} | Limitless Search`,
+        description: `${q} - 进入 Limitless Search 首页并快速搜索相关动漫资源。`,
+        url: `${siteUrl}/?q=${encodeURIComponent(q)}`,
+        siteName: "Limitless Search",
+        locale: config.ogLocale,
+        type: "website",
+      },
+      twitter: {
+        card: "summary",
+        title: `${q} | Limitless Search`,
+        description: `${q} - 进入 Limitless Search 首页并快速搜索相关动漫资源。`,
+      },
+    };
+  }
 
   return {
     title: config.title,
@@ -106,8 +133,39 @@ export function generateMetadata({
   };
 }
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<{ lang?: string; q?: string; auto?: string }>;
+}) {
+  const params = await searchParams;
+  const requestHeaders = await headers();
+  const initialLanguage = params?.lang
+    ? normalizeLanguage(params.lang)
+    : detectPreferredLanguage(requestHeaders.get("accept-language"));
+  const rankingDataset = rankingsEnabled() ? await readRankingDataset() : null;
+
   return (
-    <HomeClient />
+    <>
+      <LanguageInitializer initialLanguage={initialLanguage} />
+      <HomeClient initialLanguage={initialLanguage} />
+      {rankingDataset && params?.q ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SearchResultsPage",
+              name: `${params.q} | Limitless Search`,
+              url: `${siteUrl}/?q=${encodeURIComponent(params.q)}`,
+              mainEntity: {
+                "@type": "Thing",
+                name: params.q,
+              },
+            }),
+          }}
+        />
+      ) : null}
+    </>
   );
 }

@@ -65,6 +65,8 @@ services:
         - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
         # AI 推荐是否需要先完成人机验证 : "true" | "false"
         - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+        # AI 排行榜前端开关: "true" | "false"
+        - NEXT_PUBLIC_AI_RANKINGS_ENABLED=false
     image: limitless-search-web:local
     container_name: limitless-search-web
     pull_policy: never
@@ -87,6 +89,40 @@ services:
       - AI_SUGGEST_API_KEY=
       # AI 推荐 - 自定义提示词（可留空使用内置提示词）
       - AI_SUGGEST_PROMPT=
+      # AI 排行榜总开关: "true" 时启用排行榜页面、SEO查询入口、站点地图扩展、自动生成任务
+      - AI_RANKINGS_ENABLED=false
+      # AI 排行榜前端入口开关: 关闭后导航栏不显示排行榜入口
+      - NEXT_PUBLIC_AI_RANKINGS_ENABLED=false
+      # AI 排行榜接口地址（留空则复用 AI 推荐配置）
+      - AI_RANKINGS_BASE_URL=
+      # AI 排行榜模型（留空则复用 AI 推荐模型）
+      - AI_RANKINGS_MODEL=
+      # AI 排行榜 API Key（留空则复用 AI 推荐 Key）
+      - AI_RANKINGS_API_KEY=
+      # AI 排行榜每日执行时间，格式 HH:mm
+      - AI_RANKINGS_RUN_AT=03:00
+      # AI 排行榜时区
+      - AI_RANKINGS_TIMEZONE=Asia/Shanghai
+      # 容器启动后是否自动执行一次排行榜生成
+      - AI_RANKINGS_RUN_ON_STARTUP=false
+      # AI 排行榜最少条目数，最低会按 20 条处理
+      - AI_RANKINGS_MIN_ITEMS=20
+      # AI 排行榜数据落盘目录
+      - AI_RANKINGS_DATA_DIR=/app/data/rankings
+      # 触发 /api/rankings/sync 的鉴权令牌，务必修改
+      - AI_RANKINGS_SYNC_TOKEN=change-this-token
+      # 年榜提示词：要求输出 JSON { items: [{ query, score }] }
+      - AI_RANKINGS_PROMPT_YEARLY=You are an anime ranking researcher. Focus on Japanese anime first and Mainland Chinese animation second. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. Generate at least 20 current-year upcoming anime titles. Exclude live action, games, adult content, illegal content, and non-anime topics.
+      # 月榜提示词：要求输出 JSON { items: [{ query, score }] }
+      - AI_RANKINGS_PROMPT_MONTHLY=You are an anime seasonal ranking researcher. Focus on Japanese anime first and Mainland Chinese animation second. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. Generate at least 20 titles for the current month seasonal anime ranking. Scores must be 0-100.
+      # 日榜提示词：要求输出 JSON { items: [{ query, score }] }
+      - AI_RANKINGS_PROMPT_DAILY=You are an anime hot-topic ranking researcher. Focus on Japanese anime first and Mainland Chinese animation second. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. Generate at least 20 titles for today's hottest anime ranking based on broad public attention and likely search demand.
+      # 违规词审查提示词：要求输出 JSON { blocked: [] }
+      - AI_RANKINGS_PROMPT_MODERATION=You are a safety reviewer. Return strict JSON only in shape {"blocked":[string]}. Mark titles that are pornographic, hateful, extremist, scam-like, illegal, or clearly unrelated to anime. Keep safe anime titles unblocked.
+      # 多语言翻译提示词：要求输出 JSON { items: [{ query, titles }] }
+      - AI_RANKINGS_PROMPT_TRANSLATE=You are a multilingual anime title translator. Return strict JSON only in shape {"items":[{"query":string,"titles":{"zh-CN":string,"zh-TW":string,"en":string,"ja":string,"ru":string,"fr":string}}]}. Use natural official or search-friendly titles for each locale.
+      # 统一评分提示词：要求输出 JSON { items: [{ query, score }] }
+      - AI_RANKINGS_PROMPT_SCORE=You are an anime ranking score normalizer. Return strict JSON only in shape {"items":[{"query":string,"score":number}]}. When the same anime appears across yearly, monthly, or daily lists, assign one consistent final score from 0 to 100.
     networks:
       - limitless-network
 

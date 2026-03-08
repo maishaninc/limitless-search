@@ -2,6 +2,9 @@ import { create } from "zustand";
 
 export type Language = "zh" | "zh-TW" | "en" | "ja" | "ru" | "fr";
 
+export const defaultLanguage: Language = "zh";
+export const LANGUAGE_STORAGE_KEY = "limitless-search-language";
+
 export const languages: { code: Language; name: string }[] = [
   { code: "zh", name: "简体中文" },
   { code: "zh-TW", name: "繁體中文" },
@@ -10,6 +13,47 @@ export const languages: { code: Language; name: string }[] = [
   { code: "ru", name: "Русский" },
   { code: "fr", name: "Français" },
 ];
+
+export const normalizeLanguage = (value?: string | null): Language => {
+  if (!value) return defaultLanguage;
+
+  const normalized = value.trim().toLowerCase().replace(/_/g, "-");
+
+  if (normalized === "zh" || normalized.startsWith("zh-cn") || normalized.startsWith("zh-sg") || normalized.startsWith("zh-hans")) {
+    return "zh";
+  }
+
+  if (normalized.startsWith("zh-tw") || normalized.startsWith("zh-hk") || normalized.startsWith("zh-mo") || normalized.startsWith("zh-hant")) {
+    return "zh-TW";
+  }
+
+  if (normalized.startsWith("en")) return "en";
+  if (normalized.startsWith("ja") || normalized.startsWith("jp")) return "ja";
+  if (normalized.startsWith("ru")) return "ru";
+  if (normalized.startsWith("fr")) return "fr";
+
+  return defaultLanguage;
+};
+
+export const detectPreferredLanguage = (value?: string | string[] | null): Language => {
+  if (!value) return defaultLanguage;
+
+  const candidates = Array.isArray(value)
+    ? value
+    : value
+        .split(",")
+        .map((entry) => entry.split(";")[0]?.trim())
+        .filter(Boolean) as string[];
+
+  for (const candidate of candidates) {
+    const resolved = normalizeLanguage(candidate);
+    if (candidate) return resolved;
+  }
+
+  return defaultLanguage;
+};
+
+export const languageToLocale = (language: Language) => (language === "zh" ? "zh-CN" : language);
 
 type Translations = {
  nav: {
@@ -855,6 +899,8 @@ const translations: Record<Language, Translations> = {
   },
 };
 
+export const getTranslations = (language: Language) => translations[language];
+
 interface LanguageState {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -862,7 +908,13 @@ interface LanguageState {
 }
 
 export const useLanguage = create<LanguageState>((set) => ({
-  language: "zh",
-  setLanguage: (lang) => set({ language: lang, t: translations[lang] }),
-  t: translations["zh"],
+  language: defaultLanguage,
+  setLanguage: (lang) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    }
+
+    set({ language: lang, t: getTranslations(lang) });
+  },
+  t: getTranslations(defaultLanguage),
 }));

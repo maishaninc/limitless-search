@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { headers } from "next/headers";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { detectPreferredLanguage, languageToLocale } from "@/lib/i18n";
 
 const siteUrl = "https://search.freeanime.org";
 
@@ -62,15 +64,21 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  other: {
+    "theme-color": "#ffffff",
+  },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const htmlLang = languageToLocale(detectPreferredLanguage(requestHeaders.get("accept-language")));
+
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang={htmlLang} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
