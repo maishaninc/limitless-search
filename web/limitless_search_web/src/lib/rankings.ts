@@ -146,6 +146,74 @@ const safeJsonParse = (input: string) => {
   }
 };
 
+const extractBalancedJson = (input: string) => {
+  const start = input.indexOf("{");
+  if (start < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < input.length; i += 1) {
+    const ch = input[i];
+
+    if (inString) {
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\") {
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (ch === "{") depth += 1;
+    if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return input.slice(start, i + 1);
+      }
+    }
+  }
+
+  return null;
+};
+
+const tryParseAiObject = (raw: string) => {
+  const direct = safeJsonParse(raw);
+  if (direct && typeof direct === "object") {
+    return direct as Record<string, unknown>;
+  }
+
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+  if (fenced) {
+    const fromFence = safeJsonParse(fenced.trim());
+    if (fromFence && typeof fromFence === "object") {
+      return fromFence as Record<string, unknown>;
+    }
+  }
+
+  const balanced = extractBalancedJson(raw);
+  if (balanced) {
+    const fromBalanced = safeJsonParse(balanced.trim());
+    if (fromBalanced && typeof fromBalanced === "object") {
+      return fromBalanced as Record<string, unknown>;
+    }
+  }
+
+  return null;
+};
+
 const getAiConfig = () => ({
   baseUrl: (process.env.AI_RANKINGS_BASE_URL || process.env.AI_SUGGEST_BASE_URL || "").replace(/\/$/, ""),
   model: process.env.AI_RANKINGS_MODEL || process.env.AI_SUGGEST_MODEL || "",
@@ -207,11 +275,23 @@ const callAiJson = async <T>(systemPrompt: string, userPrompt: string): Promise<
         throw new Error(text || `AI rankings request failed on attempt ${attempt}`);
       }
 
-      const parsed = safeJsonParse(text) as any;
-      const content = parsed?.choices?.[0]?.message?.content || text;
-      const json = typeof content === "string" ? safeJsonParse(content) : content;
+      const parsed = tryParseAiObject(text) as any;
+      const content = parsed?.choices?.[0]?.message?.content ?? parsed ?? text;
+      const json =
+        typeof content === "string"
+          ? tryParseAiObject(content)
+          : content && typeof content === "object"
+            ? content
+            : null;
+
+      if (json && typeof json === "object" && "error" in json) {
+        throw new Error(JSON.stringify((json as { error?: unknown }).error));
+      }
+
       if (!json || typeof json !== "object") {
-        throw new Error(`AI rankings returned invalid JSON on attempt ${attempt}`);
+        throw new Error(
+          `AI rankings returned invalid JSON on attempt ${attempt}. raw=${text.slice(0, 280)}`,
+        );
       }
 
       logRankings("ai-request", "attempt succeeded", {
