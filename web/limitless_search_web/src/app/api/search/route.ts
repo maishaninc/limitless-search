@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const UPSTREAM_BASE =
-  process.env.API_BASE?.replace(/\/$/, "") ||
-  process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ||
-  "http://backend:8888";
+  process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") || "http://backend:8888";
 
 const safeJsonParse = (input: string) => {
   try {
@@ -40,7 +38,7 @@ export async function POST(request: NextRequest) {
       const verifyUrl =
         provider === "turnstile"
           ? "https://challenges.cloudflare.com/turnstile/v0/siteverify"
-          : "https://api.hcaptcha.com/siteverify";
+          : "https://hcaptcha.com/siteverify";
 
       const secret =
         provider === "turnstile"

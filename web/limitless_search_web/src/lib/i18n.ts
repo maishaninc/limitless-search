@@ -76,6 +76,8 @@ type Translations = {
  donate: {
    title: string;
    description: string;
+   noAds: string;
+   poweredBy: string;
    supportedMethods: string;
    methodDesc: string;
    addressNote: string;
@@ -109,6 +111,7 @@ type Translations = {
    title: string;
    content: string;
    contact: string;
+   license: string;
  };
  footer: {
    terms: string;
@@ -186,7 +189,9 @@ const translations: Record<Language, Translations> = {
     },
     donate: {
       title: "捐助 Freeanime.org",
-      description: "Freeanime.org获得的全部捐助全部利用与Freeanime.org社区",
+      description: "当然你也可以捐助我们，你的捐助将利用于完善社区和组织延续，感谢！",
+      noAds: "我们不需要商业的广告",
+      poweredBy: "Freeanime.org 由 Maishan Inc. 提供技术与资金支持",
       supportedMethods: "支持的捐助方式",
       methodDesc: "暂时仅支持 使用solana区块链向我们发送USDT",
       addressNote: "我们会在捐助页面不间断更新捐助名单",
@@ -225,8 +230,9 @@ const translations: Record<Language, Translations> = {
     about: {
       title: "关于 Limitless Search",
       content:
-        "Limitless Search 由 Maishan, Inc 与 SMV 维护，统一接口聚合网盘动漫资源，免登录即可快速搜索。",
-      contact: "Limitless Search Powered by Maishan,Inc",
+        "Limitless Search 由 Maishan Inc. 与 SMV 维护，统一接口聚合网盘动漫资源，免登录即可快速搜索。",
+      contact: "Limitless Search Powered by Maishan Inc.",
+      license: "Limitless Search 采用 CC BY-NC 4.0 (署名-非商业性使用 4.0 国际) 许可证",
     },
     footer: {
       terms: "用户协议",
@@ -236,7 +242,7 @@ const translations: Record<Language, Translations> = {
       cookies: "管理 Cookies",
       doNotShare: "不分享我的个人信息",
       rights:
-        "Copyright © {year} Maishan,Inc All rights reserved Limitless Search",
+        "Copyright © {year} Maishan Inc. All rights reserved Limitless Search",
     },
   },
   "zh-TW": {
@@ -303,7 +309,9 @@ const translations: Record<Language, Translations> = {
     },
     donate: {
       title: "贊助 Freeanime.org",
-      description: "Freeanime.org獲得的全部贊助全部利用與Freeanime.org社群",
+      description: "當然你也可以捐助我們，你的捐助將利用於完善社群和組織延續，感謝！",
+      noAds: "我們不需要商業的廣告",
+      poweredBy: "Freeanime.org 由 Maishan Inc. 提供技術與資金支持",
       supportedMethods: "支援的贊助方式",
       methodDesc: "暫時僅支援 使用solana區塊鏈向我們發送USDT",
       addressNote: "我們會在贊助頁面不間斷更新贊助名單",
@@ -342,8 +350,9 @@ const translations: Record<Language, Translations> = {
     about: {
       title: "關於 Limitless Search",
       content:
-        "Limitless Search 由 Maishan, Inc 與 SMV 維護，統一介面聚合網盤動漫資源，免登入即可快速搜尋。",
-      contact: "Limitless Search Powered by Maishan,Inc",
+        "Limitless Search 由 Maishan Inc. 與 SMV 維護，統一介面聚合網盤動漫資源，免登入即可快速搜尋。",
+      contact: "Limitless Search Powered by Maishan Inc.",
+      license: "Limitless Search 採用 CC BY-NC 4.0 (署名-非商業性使用 4.0 國際) 許可證",
     },
     footer: {
       terms: "使用者條款",
@@ -353,7 +362,7 @@ const translations: Record<Language, Translations> = {
       cookies: "管理 Cookies",
       doNotShare: "不要分享我的個人資訊",
       rights:
-        "Copyright © {year} Maishan,Inc All rights reserved Limitless Search",
+        "Copyright © {year} Maishan Inc. All rights reserved Limitless Search",
     },
   },
   en: {
@@ -422,7 +431,9 @@ const translations: Record<Language, Translations> = {
     },
     donate: {
       title: "Donate to Freeanime.org",
-      description: "All donations received by Freeanime.org are used for the Freeanime.org community",
+      description: "You can also donate to us. Your donation will be used to improve the community and sustain the organization. Thank you!",
+      noAds: "We don't need commercial advertising",
+      poweredBy: "Freeanime.org is powered by Maishan Inc. with technical and financial support",
       supportedMethods: "Supported Donation Methods",
       methodDesc: "Currently only supports sending USDT via Solana blockchain",
       addressNote: "We will continuously update the donation list on the donation page",
@@ -461,8 +472,9 @@ const translations: Record<Language, Translations> = {
     about: {
       title: "About Limitless Search",
       content:
-        "Limitless Search, maintained by Maishan, Inc & SMV, unifies cloud search so you can find anime resources quickly without logging in.",
-      contact: "Limitless Search Powered by Maishan,Inc",
+        "Limitless Search, maintained by Maishan Inc. & SMV, unifies cloud search so you can find anime resources quickly without logging in.",
+      contact: "Limitless Search Powered by Maishan Inc.",
+      license: "Limitless Search is licensed under CC BY-NC 4.0 (Attribution-NonCommercial 4.0 International)",
     },
     footer: {
       terms: "Terms of Use",
@@ -472,7 +484,7 @@ const translations: Record<Language, Translations> = {
       cookies: "Manage Cookies",
       doNotShare: "Do Not Share My Personal Info",
       rights:
-        "Copyright © {year} Maishan,Inc All rights reserved Limitless Search",
+        "Copyright © {year} Maishan Inc. All rights reserved Limitless Search",
     },
   },
   ja: {
@@ -541,7 +553,9 @@ const translations: Record<Language, Translations> = {
     },
     donate: {
       title: "Freeanime.org に寄付",
-      description: "Freeanime.org が受け取った寄付はすべて Freeanime.org コミュニティのために使用されます",
+      description: "寄付していただくことも可能です。あなたの寄付はコミュニティの改善と組織の継続に使用されます。ありがとうございます！",
+      noAds: "私たちは商業広告を必要としません",
+      poweredBy: "Freeanime.org は Maishan Inc. の技術的・資金的支援により運営されています",
       supportedMethods: "対応している寄付方法",
       methodDesc: "現在は Solana ブロックチェーン経由での USDT 送金のみ対応しています",
       addressNote: "寄付者リストは寄付ページにて随時更新されます",
@@ -580,8 +594,9 @@ const translations: Record<Language, Translations> = {
     about: {
       title: "Limitless Search とは",
       content:
-        "Limitless Search は Maishan, Inc と SMV が運営し、ログイン不要でアニメ資源を素早く見つけられる統合クラウド検索です。",
-      contact: "Limitless Search Powered by Maishan,Inc",
+        "Limitless Search は Maishan Inc. と SMV が運営し、ログイン不要でアニメ資源を素早く見つけられる統合クラウド検索です。",
+      contact: "Limitless Search Powered by Maishan Inc.",
+      license: "Limitless Search は CC BY-NC 4.0 (表示-非営利 4.0 国際) ライセンスの下で提供されています",
     },
     footer: {
       terms: "利用規約",
@@ -591,7 +606,7 @@ const translations: Record<Language, Translations> = {
       cookies: "Cookie の管理",
       doNotShare: "個人情報を共有しない",
       rights:
-        "Copyright © {year} Maishan,Inc All rights reserved Limitless Search",
+        "Copyright © {year} Maishan Inc. All rights reserved Limitless Search",
     },
   },
   ru: {
@@ -660,7 +675,9 @@ const translations: Record<Language, Translations> = {
     },
     donate: {
       title: "Пожертвовать Freeanime.org",
-      description: "Все пожертвования, полученные Freeanime.org, используются для сообщества Freeanime.org",
+      description: "Вы также можете сделать пожертвование. Ваше пожертвование будет использовано для улучшения сообщества и поддержания организации. Спасибо!",
+      noAds: "Нам не нужна коммерческая реклама",
+      poweredBy: "Freeanime.org работает при технической и финансовой поддержке Maishan Inc.",
       supportedMethods: "Поддерживаемые способы пожертвования",
       methodDesc: "В настоящее время поддерживается только отправка USDT через блокчейн Solana",
       addressNote: "Мы будем постоянно обновлять список пожертвований на странице пожертвований",
@@ -699,8 +716,9 @@ const translations: Record<Language, Translations> = {
     about: {
       title: "О Limitless Search",
       content:
-        "Limitless Search, поддерживаемый Maishan, Inc и SMV, объединяет облачные поиски, позволяя быстро находить аниме без входа.",
-      contact: "Limitless Search Powered by Maishan,Inc",
+        "Limitless Search, поддерживаемый Maishan Inc. и SMV, объединяет облачные поиски, позволяя быстро находить аниме без входа.",
+      contact: "Limitless Search Powered by Maishan Inc.",
+      license: "Limitless Search распространяется под лицензией CC BY-NC 4.0 (Attribution-NonCommercial 4.0 International)",
     },
     footer: {
       terms: "Условия использования",
@@ -710,7 +728,7 @@ const translations: Record<Language, Translations> = {
       cookies: "Управление Cookies",
       doNotShare: "Не передавать мои персональные данные",
       rights:
-        "Copyright © {year} Maishan,Inc All rights reserved Limitless Search",
+        "Copyright © {year} Maishan Inc. All rights reserved Limitless Search",
     },
   },
   fr: {
@@ -779,7 +797,9 @@ const translations: Record<Language, Translations> = {
     },
     donate: {
       title: "Faire un don à Freeanime.org",
-      description: "Tous les dons reçus par Freeanime.org sont utilisés pour la communauté Freeanime.org",
+      description: "Vous pouvez également nous faire un don. Votre don sera utilisé pour améliorer la communauté et soutenir l'organisation. Merci !",
+      noAds: "Nous n'avons pas besoin de publicité commerciale",
+      poweredBy: "Freeanime.org est soutenu par Maishan Inc. avec un support technique et financier",
       supportedMethods: "Méthodes de don prises en charge",
       methodDesc: "Actuellement, seul l'envoi d'USDT via la blockchain Solana est pris en charge",
       addressNote: "Nous mettrons continuellement à jour la liste des dons sur la page de dons",
@@ -818,8 +838,9 @@ const translations: Record<Language, Translations> = {
     about: {
       title: "À propos de Limitless Search",
       content:
-        "Limitless Search, maintenu par Maishan, Inc et SMV, unifie la recherche cloud pour trouver rapidement des animés sans connexion.",
-      contact: "Limitless Search Powered by Maishan,Inc",
+        "Limitless Search, maintenu par Maishan Inc. et SMV, unifie la recherche cloud pour trouver rapidement des animés sans connexion.",
+      contact: "Limitless Search Powered by Maishan Inc.",
+      license: "Limitless Search est sous licence CC BY-NC 4.0 (Attribution-Pas d'Utilisation Commerciale 4.0 International)",
     },
     footer: {
       terms: "Conditions d'utilisation",
@@ -829,7 +850,7 @@ const translations: Record<Language, Translations> = {
       cookies: "Gérer les cookies",
       doNotShare: "Ne pas partager mes informations personnelles",
       rights:
-        "Copyright © {year} Maishan,Inc All rights reserved Limitless Search",
+        "Copyright © {year} Maishan Inc. All rights reserved Limitless Search",
     },
   },
 };

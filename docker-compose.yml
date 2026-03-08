@@ -10,10 +10,10 @@ services:
     pull_policy: never  
     restart: unless-stopped
     expose:
-      - "8888"
+      - "8888" # 后端监听端口 不开放到主机公网只能在 limitless-network 网络中访问
     environment:
       # 后端监听端口
-      - PORT=8888
+      - PORT=8888       
       - CHANNELS=tgsearchers4,Aliyun_4K_Movies,bdbdndn11,yunpanx,bsbdbfjfjff,yp123pan,sbsbsnsqq,yunpanxunlei,tianyifc,BaiduCloudDisk,txtyzy,peccxinpd,gotopan,PanjClub,kkxlzy,baicaoZY,MCPH01,MCPH02,MCPH03,bdwpzhpd,ysxb48,jdjdn1111,yggpan,MCPH086,zaihuayun,Q66Share,ucwpzy,shareAliyun,alyp_1,dianyingshare,Quark_Movies,XiangxiuNBB,ydypzyfx,ucquark,xx123pan,yingshifenxiang123,zyfb123,tyypzhpd,tianyirigeng,cloudtianyi,hdhhd21,Lsp115,oneonefivewpfx,qixingzhenren,taoxgzy,Channel_Shares_115,tyysypzypd,vip115hot,wp123zy,yunpan139,yunpan189,yunpanuc,yydf_hzl,leoziyuan,pikpakpan,Q_dongman,yoyokuakeduanju,TG654TG,WFYSFX02,QukanMovie,yeqingjie_GJG666,movielover8888_film3,Baidu_netdisk,D_wusun,FLMdongtianfudi,KaiPanshare,QQZYDAPP,rjyxfx,PikPak_Share_Channel,btzhi,newproductsourcing,cctv1211,duan_ju,QuarkFree,yunpanNB,kkdj001,xxzlzn,pxyunpanxunlei,jxwpzy,kuakedongman,liangxingzhinan,xiangnikanj,solidsexydoll,guoman4K,zdqxm,kduanju,cilidianying,CBduanju,SharePanFilms,dzsgx,BooksRealm,Oscar_4Kmovies,douerpan,baidu_yppan,Q_jilupian,Netdisk_Movies,yunpanquark,ammmziyuan,ciliziyuanku,cili8888,jzmm_123pan,gdsharing,dmhy_org,
       - ENABLED_PLUGINS=labi,zhizhen,shandian,duoduo,muou,wanou,hunhepan,jikepan,panwiki,pansearch,panta,qupansou,hdr4k,pan666,susu,thepiratebay,xuexizhinan,panyq,ouge,huban,cyg,erxiao,miaoso,fox4k,pianku,clmao,wuji,cldi,xiaozhang,libvio,leijing,xb6v,xys,ddys,hdmoli,yuhuage,u3c3,clxiong,jutoushe,sdso,xiaoji,xdyh,haisou,bixin,djgou,nyaa,xinjuc,aikanzy,qupanshe,xdpan,discourse,yunsou,qqpd,ahhhhfs,nsgame,gying,quark4k,quarksoo,sousou,ash
       - CACHE_ENABLED=true
@@ -50,12 +50,21 @@ services:
       context: ./web/limitless_search_web
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_CAPTCHA_PROVIDER: none
-        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
-        NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
-        NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
-        NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
-        NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
+        # 构建时环境变量 (NEXT_PUBLIC_* 需要在构建时嵌入)
+        # 后端 API 地址（容器内指向 backend 别名）
+        - NEXT_PUBLIC_API_BASE=http://backend:8888
+        # 人机验证配置: "turnstile" | "hcaptcha" | "none"
+        - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+        # Cloudflare Turnstile Site Key
+        - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+        # hCaptcha Site Key
+        - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+        # AI 原版名称推荐开关 : "true" | "false"
+        - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+        # 触发 AI 提示的结果数量阈值（默认 50）
+        - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+        # AI 推荐是否需要先完成人机验证 : "true" | "false"
+        - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
     image: limitless-search-web:local
     container_name: limitless-search-web
     pull_policy: never
@@ -65,24 +74,18 @@ services:
     ports:
       - "3200:3200"
     environment:
-      # 服务端路由访问后端 API 的地址（容器内指向 backend 别名）
-      - API_BASE=http://backend:8888
-
-      # 人机验证配置
-      # 可选值: turnstile | hcaptcha | none
-      - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-      - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+      # 运行时环境变量 (服务端使用，不暴露给客户端)
+      # Cloudflare Turnstile Secret Key
       - TURNSTILE_SECRET_KEY=
-      - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+      # hCaptcha Secret Key
       - HCAPTCHA_SECRET_KEY=
-
-      # AI 原版名称推荐（OpenAI 兼容接口）
-      - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-      - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-      - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+      # AI 推荐 - OpenAI 兼容接口地址，例如 https://api.openai.com/v1
       - AI_SUGGEST_BASE_URL=
+      # AI 推荐 - 模型名称，例如 gpt-5
       - AI_SUGGEST_MODEL=
+      # AI 推荐 - API Key
       - AI_SUGGEST_API_KEY=
+      # AI 推荐 - 自定义提示词（可留空使用内置提示词）
       - AI_SUGGEST_PROMPT=
     networks:
       - limitless-network

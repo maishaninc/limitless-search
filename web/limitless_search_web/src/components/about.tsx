@@ -46,11 +46,20 @@ export function About() {
             <p className="text-base md:text-lg font-medium text-black dark:text-white">
               {t.about.contact}
             </p>
+            <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-400">
+              {t.about.license}
+            </p>
           </div>
 
           {/* Donation Section */}
           <div className="pt-12 border-t border-neutral-200 dark:border-neutral-800">
             <h3 className="text-2xl md:text-3xl font-bold tracking-tighter mb-6">{t.donate.title}</h3>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-2">
+              {t.donate.noAds}
+            </p>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-2">
+              {t.donate.poweredBy}
+            </p>
             <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-8">
               {t.donate.description}
             </p>
