@@ -3,7 +3,7 @@ import path from "path";
 import { rankingsEnabled } from "@/lib/rankings-config";
 
 export type RankingLocale = "zh-CN" | "zh-TW" | "en" | "ja" | "ru" | "fr";
-export type RankingKey = "yearly" | "monthly" | "daily" | "bili_hot" | "bili_schedule";
+export type RankingKey = "yearly" | "monthly" | "daily" | "bili_rank" | "bili_hot" | "bili_schedule";
 type AiRankingKey = "yearly" | "monthly" | "daily";
 
 export type RankingTitles = Record<RankingLocale, string>;
@@ -482,21 +482,44 @@ const mapRankItem = (query: string, score: number, extra?: Partial<RankingItem>)
 });
 
 const fetchBiliRankings = async (minItems: number) => {
-  const rankUrl =
-    process.env.AI_RANKINGS_BILIBILI_RANK_URL ||
-    "https://api.bilibili.com/x/web-interface/ranking/v2?rid=13&type=all";
+  const rankUrl = process.env.AI_RANKINGS_BILIBILI_RANK_URL || "https://api.bilibili.com/x/web-interface/ranking/v2?rid=13&type=all";
+  const rankRegionFallbackUrl =
+    process.env.AI_RANKINGS_BILIBILI_RANK_REGION_URL ||
+    "https://api.bilibili.com/x/web-interface/ranking/region?rid=13&day=3&original=0";
+  const rankPageUrl =
+    process.env.AI_RANKINGS_BILIBILI_RANK_PAGE_URL ||
+    "https://www.bilibili.com/v/popular/rank/anime";
   const scheduleUrl =
     process.env.AI_RANKINGS_BILIBILI_SCHEDULE_URL ||
-    "https://api.bilibili.com/pgc/web/timeline/v2";
+    "https://api.bilibili.com/pgc/web/timeline?types=1";
+  const animePageUrl =
+    process.env.AI_RANKINGS_BILIBILI_ANIME_PAGE_URL ||
+    "https://www.bilibili.com/anime";
+  const hotBangumiUrl =
+    process.env.AI_RANKINGS_BILIBILI_HOT_URL ||
+    "https://api.bilibili.com/pgc/web/rank/list?season_type=1&day=3";
   const userAgent =
     process.env.AI_RANKINGS_BILIBILI_USER_AGENT ||
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
 
-  const [rankResp, scheduleResp] = await Promise.all([
+  const [rankResp, rankRegionResp, rankPageResp, scheduleResp, hotResp, animePageResp] = await Promise.all([
     fetch(rankUrl, {
       headers: {
         "user-agent": userAgent,
         referer: "https://www.bilibili.com/v/popular/rank/anime",
+      },
+      cache: "no-store",
+    }),
+    fetch(rankRegionFallbackUrl, {
+      headers: {
+        "user-agent": userAgent,
+        referer: "https://www.bilibili.com/v/popular/rank/anime",
+      },
+      cache: "no-store",
+    }),
+    fetch(rankPageUrl, {
+      headers: {
+        "user-agent": userAgent,
       },
       cache: "no-store",
     }),
@@ -507,27 +530,64 @@ const fetchBiliRankings = async (minItems: number) => {
       },
       cache: "no-store",
     }),
+    fetch(hotBangumiUrl, {
+      headers: {
+        "user-agent": userAgent,
+        referer: "https://www.bilibili.com/anime",
+      },
+      cache: "no-store",
+    }),
+    fetch(animePageUrl, {
+      headers: {
+        "user-agent": userAgent,
+      },
+      cache: "no-store",
+    }),
   ]);
 
-  if (!rankResp.ok) {
-    throw new Error(`Bilibili ranking fetch failed: ${rankResp.status}`);
-  }
-  if (!scheduleResp.ok) {
-    throw new Error(`Bilibili schedule fetch failed: ${scheduleResp.status}`);
+  const rankJson = rankResp.ok ? ((await rankResp.json()) as any) : null;
+  const rankRegionJson = rankRegionResp.ok ? ((await rankRegionResp.json()) as any) : null;
+  const scheduleJson = scheduleResp.ok ? ((await scheduleResp.json()) as any) : null;
+  const hotJson = hotResp.ok ? ((await hotResp.json()) as any) : null;
+  const rankPageHtml = rankPageResp.ok ? await rankPageResp.text() : "";
+  const animePageHtml = animePageResp.ok ? await animePageResp.text() : "";
+
+  const parsePageItems = (html: string) => {
+    const initialState =
+      html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\//)?.[1] ||
+      html.match(/__INITIAL_STATE__=(\{[\s\S]*?\});/)?.[1];
+
+    const state = initialState ? safeJsonParse(initialState) : null;
+    const list =
+      (state as any)?.rankData?.list ||
+      (state as any)?.rankList ||
+      (state as any)?.store?.rank?.list ||
+      [];
+    return Array.isArray(list) ? list : [];
+  };
+
+  const rankItems = [
+    ...((rankJson?.data?.list || rankJson?.data || []) as any[]),
+    ...((rankRegionJson?.data || rankRegionJson?.data?.list || []) as any[]),
+    ...parsePageItems(rankPageHtml),
+  ];
+
+  if (rankItems.length === 0) {
+    logRankings("bilibili", "rank source empty", {
+      rankStatus: rankResp.status,
+      rankRegionStatus: rankRegionResp.status,
+      rankPageStatus: rankPageResp.status,
+    });
   }
 
-  const rankJson = (await rankResp.json()) as any;
-  const scheduleJson = (await scheduleResp.json()) as any;
-
-  const rankItems = (rankJson?.data?.list || rankJson?.data || []) as any[];
   const maxPlay = Math.max(
     1,
     ...rankItems.map((item) => Number(item?.stat?.view ?? item?.play ?? 0)),
   );
 
-  const biliHotItems = rankItems
+  const biliRankItems = rankItems
     .map((item) => {
-      const title = (item?.title || "").trim();
+      const title = (item?.title || item?.name || "").trim();
       if (!title) return null;
       const play = Number(item?.stat?.view ?? item?.play ?? 0);
       return mapRankItem(title, toBiliScore(play, maxPlay), {
@@ -536,13 +596,38 @@ const fetchBiliRankings = async (minItems: number) => {
     })
     .filter(Boolean) as RankingItem[];
 
-  const scheduleRaw = (scheduleJson?.result?.latest || scheduleJson?.result?.timeline || scheduleJson?.data?.timeline || []) as any[];
+  const hotRaw = (hotJson?.result?.list || hotJson?.data?.list || []) as any[];
+  const maxHotFollow = Math.max(1, ...hotRaw.map((item) => Number(item?.stat?.follow || item?.follows || 0)));
+
+  const biliHotItems = hotRaw
+    .map((item) => {
+      const title = (item?.title || item?.season_title || "").trim();
+      if (!title) return null;
+      const follows = Number(item?.stat?.follow || item?.follows || 0);
+      return mapRankItem(title, toBiliScore(follows, maxHotFollow), {
+        sourceUrl: item?.url || item?.share_url || "https://www.bilibili.com/anime",
+      });
+    })
+    .filter(Boolean) as RankingItem[];
+
+  const scheduleRaw = [
+    ...((scheduleJson?.result?.latest || []) as any[]),
+    ...((scheduleJson?.result?.timeline || []) as any[]),
+  ];
+
+  const animeState =
+    animePageHtml.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\//)?.[1] ||
+    animePageHtml.match(/__INITIAL_STATE__=(\{[\s\S]*?\});/)?.[1];
+  const animeParsed = animeState ? (safeJsonParse(animeState) as any) : null;
+  const animeScheduleFallback = (animeParsed?.timeline?.latest || animeParsed?.timeline?.items || []) as any[];
+
+  const mergedScheduleRaw = [...scheduleRaw, ...animeScheduleFallback];
   const maxFollow = Math.max(
     1,
-    ...scheduleRaw.map((item) => Number(item?.follows || item?.pub_index || 0)),
+    ...mergedScheduleRaw.map((item) => Number(item?.follows || item?.pub_index || 0)),
   );
 
-  const biliScheduleItems = scheduleRaw
+  const biliScheduleItems = mergedScheduleRaw
     .flatMap((group: any) => {
       const episodes = (group?.episodes || group?.seasons || group?.cards || []) as any[];
       return episodes.map((episode: any) => {
@@ -580,6 +665,7 @@ const fetchBiliRankings = async (minItems: number) => {
   };
 
   return {
+    rank: dedup(biliRankItems),
     hot: dedup(biliHotItems),
     schedule: dedup(biliScheduleItems),
   };
@@ -835,7 +921,8 @@ export const generateRankings = async () => {
       daily: dailyVerified,
     } satisfies Record<AiRankingKey, Array<{ query: string; score: number }>>;
 
-    let biliData: { hot: RankingItem[]; schedule: RankingItem[] } = {
+    let biliData: { rank: RankingItem[]; hot: RankingItem[]; schedule: RankingItem[] } = {
+      rank: [],
       hot: [],
       schedule: [],
     };
@@ -932,6 +1019,12 @@ export const generateRankings = async () => {
         yearly: buildBucket("yearly"),
         monthly: buildBucket("monthly"),
         daily: buildBucket("daily"),
+        bili_rank: {
+          key: "bili_rank",
+          generatedAt,
+          total: biliData.rank.length,
+          items: biliData.rank,
+        },
         bili_hot: {
           key: "bili_hot",
           generatedAt,
@@ -951,6 +1044,7 @@ export const generateRankings = async () => {
       yearly: dataset.rankings.yearly.total,
       monthly: dataset.rankings.monthly.total,
       daily: dataset.rankings.daily.total,
+      biliRank: dataset.rankings.bili_rank.total,
       biliHot: dataset.rankings.bili_hot.total,
       biliSchedule: dataset.rankings.bili_schedule.total,
       generatedAt,
@@ -964,7 +1058,37 @@ export const generateRankings = async () => {
       minItems,
       reason: "rankings generation failed",
     });
-    throw error;
+
+    let biliData: { rank: RankingItem[]; hot: RankingItem[]; schedule: RankingItem[] } = {
+      rank: [],
+      hot: [],
+      schedule: [],
+    };
+
+    try {
+      biliData = await fetchBiliRankings(minItems);
+    } catch (biliError) {
+      logRankingsError("pipeline", biliError, {
+        reason: "bilibili fallback fetch failed",
+      });
+    }
+
+    const generatedAt = new Date().toISOString();
+    const fallback = {
+      generatedAt,
+      year,
+      month,
+      rankings: {
+        yearly: { key: "yearly", generatedAt, total: 0, items: [] },
+        monthly: { key: "monthly", generatedAt, total: 0, items: [] },
+        daily: { key: "daily", generatedAt, total: 0, items: [] },
+        bili_rank: { key: "bili_rank", generatedAt, total: biliData.rank.length, items: biliData.rank },
+        bili_hot: { key: "bili_hot", generatedAt, total: biliData.hot.length, items: biliData.hot },
+        bili_schedule: { key: "bili_schedule", generatedAt, total: biliData.schedule.length, items: biliData.schedule },
+      },
+    } satisfies RankingDataset;
+
+    return fallback;
   }
 };
 

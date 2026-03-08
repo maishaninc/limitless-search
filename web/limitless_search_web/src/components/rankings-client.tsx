@@ -19,10 +19,12 @@ const copy = {
     monthly: (month: number) => `${month} 月新番`,
     daily: "当日热榜",
     bili: "BiliBili 排行",
+    biliRank: "BiliBili 排行",
     biliHot: "番剧热播榜",
     biliSchedule: "新番时间表",
     name: "名称",
     score: "评分",
+    rank: "排名",
     expand: "展开更多",
     collapse: "收起",
     empty: "暂时还没有排行榜数据",
@@ -34,10 +36,12 @@ const copy = {
     monthly: (month: number) => `${month} 月新番`,
     daily: "當日熱榜",
     bili: "BiliBili 排行",
+    biliRank: "BiliBili 排行",
     biliHot: "番劇熱播榜",
     biliSchedule: "新番時間表",
     name: "名稱",
     score: "評分",
+    rank: "排名",
     expand: "展開更多",
     collapse: "收起",
     empty: "暫時沒有排行榜資料",
@@ -49,10 +53,12 @@ const copy = {
     monthly: (month: number) => `${month} Seasonal`,
     daily: "Daily Hot",
     bili: "BiliBili Rank",
+    biliRank: "BiliBili Rank",
     biliHot: "Anime Hot Rank",
     biliSchedule: "Anime Schedule",
     name: "Title",
     score: "Score",
+    rank: "Rank",
     expand: "Show More",
     collapse: "Show Less",
     empty: "No ranking data yet",
@@ -64,10 +70,12 @@ const copy = {
     monthly: (month: number) => `${month} 月新番`,
     daily: "本日の人気",
     bili: "BiliBili ランキング",
+    biliRank: "BiliBili ランキング",
     biliHot: "配信人気",
     biliSchedule: "新番スケジュール",
     name: "作品名",
     score: "スコア",
+    rank: "順位",
     expand: "もっと見る",
     collapse: "閉じる",
     empty: "ランキングデータはまだありません",
@@ -79,10 +87,12 @@ const copy = {
     monthly: (month: number) => `${month} Новинки`,
     daily: "Топ дня",
     bili: "Рейтинг BiliBili",
+    biliRank: "Рейтинг BiliBili",
     biliHot: "Топ тайтлов",
     biliSchedule: "Расписание новинок",
     name: "Название",
     score: "Оценка",
+    rank: "Ранг",
     expand: "Показать еще",
     collapse: "Свернуть",
     empty: "Данные рейтинга пока недоступны",
@@ -94,10 +104,12 @@ const copy = {
     monthly: (month: number) => `${month} Nouveautes`,
     daily: "Tendance du jour",
     bili: "Classement BiliBili",
+    biliRank: "Classement BiliBili",
     biliHot: "Top anime",
     biliSchedule: "Calendrier anime",
     name: "Titre",
     score: "Score",
+    rank: "Rang",
     expand: "Afficher plus",
     collapse: "Reduire",
     empty: "Pas encore de donnees de classement",
@@ -108,6 +120,7 @@ const icons = {
   yearly: Trophy,
   monthly: CalendarDays,
   daily: Flame,
+  bili_rank: Tv,
   bili_hot: PlaySquare,
   bili_schedule: Tv,
 };
@@ -123,6 +136,7 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
     yearly: false,
     monthly: false,
     daily: false,
+    bili_rank: false,
     bili_hot: false,
     bili_schedule: false,
   });
@@ -132,6 +146,7 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
       { key: "yearly" as const, label: ui.yearly(dataset.year) },
       { key: "monthly" as const, label: ui.monthly(dataset.month) },
       { key: "daily" as const, label: ui.daily },
+      { key: "bili_rank" as const, label: ui.biliRank },
     ],
     [dataset.month, dataset.year, ui],
   );
@@ -145,6 +160,7 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
   );
 
   const bucket = dataset.rankings[activeKey];
+  const isBiliRanking = activeKey === "bili_rank" || activeKey === "bili_hot" || activeKey === "bili_schedule";
   const visibleItems = expanded[activeKey] ? bucket.items : bucket.items.slice(0, 10);
 
   return (
@@ -256,7 +272,7 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
           >
             <div className="grid grid-cols-[1fr_auto] gap-4 px-6 py-4 text-xs uppercase tracking-[0.22em] text-neutral-500 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/40">
               <span>{ui.name}</span>
-              <span>{ui.score}</span>
+              <span>{isBiliRanking ? ui.rank : ui.score}</span>
             </div>
 
             {visibleItems.length === 0 ? (
@@ -279,7 +295,7 @@ export function RankingsClient({ dataset }: RankingsClientProps) {
                       </div>
                     </div>
                     <div className="self-center text-lg font-black text-neutral-900 dark:text-white">
-                      {item.score.toFixed(1)}
+                      {isBiliRanking ? index + 1 : item.score.toFixed(1)}
                     </div>
                   </Link>
                   );
