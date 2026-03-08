@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { RankingsClient } from "@/components/rankings-client";
 import { RankingsUnavailable } from "@/components/rankings-unavailable";
 import { detectPreferredLanguage, normalizeLanguage } from "@/lib/i18n";
-import { readRankingDataset } from "@/lib/rankings";
+import { ensureRankingDataset } from "@/lib/rankings";
 import { rankingsEnabled } from "@/lib/rankings-config";
 
 export const dynamic = "force-dynamic";
@@ -86,7 +86,7 @@ export default async function RankingsPage({
     ? normalizeLanguage(params.lang)
     : detectPreferredLanguage(requestHeaders.get("accept-language"));
   const enabled = rankingsEnabled();
-  const dataset = enabled ? await readRankingDataset() : null;
+  const dataset = enabled ? await ensureRankingDataset() : null;
 
   return (
     <>

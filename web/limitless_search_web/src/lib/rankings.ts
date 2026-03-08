@@ -121,6 +121,17 @@ export const readRankingDataset = async (): Promise<RankingDataset | null> => {
   }
 };
 
+export const ensureRankingDataset = async (): Promise<RankingDataset | null> => {
+  const existing = await readRankingDataset();
+  if (existing) return existing;
+
+  try {
+    return await generateAndStoreRankings();
+  } catch {
+    return null;
+  }
+};
+
 const writeRankingDataset = async (dataset: RankingDataset) => {
   const filePath = getRankingDataFile();
   await fs.mkdir(path.dirname(filePath), { recursive: true });
@@ -143,6 +154,17 @@ const getAiConfig = () => ({
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const logRankings = (stage: string, message: string, extra?: Record<string, unknown>) => {
+  const payload = extra ? ` ${JSON.stringify(extra)}` : "";
+  console.log(`[rankings][${stage}] ${message}${payload}`);
+};
+
+const logRankingsError = (stage: string, error: unknown, extra?: Record<string, unknown>) => {
+  const message = error instanceof Error ? error.message : String(error);
+  const payload = extra ? ` ${JSON.stringify(extra)}` : "";
+  console.error(`[rankings][${stage}] ${message}${payload}`);
+};
+
 const callAiJson = async <T>(systemPrompt: string, userPrompt: string): Promise<T> => {
   const { baseUrl, model, apiKey } = getAiConfig();
   if (!baseUrl || !model || !apiKey) {
@@ -150,9 +172,18 @@ const callAiJson = async <T>(systemPrompt: string, userPrompt: string): Promise<
   }
 
   let lastError: Error | null = null;
+  const promptPreview = systemPrompt.slice(0, 80);
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
+      logRankings("ai-request", "attempt started", {
+        attempt,
+        maxAttempts: 3,
+        model,
+        baseUrl,
+        promptPreview,
+      });
+
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
@@ -183,14 +214,34 @@ const callAiJson = async <T>(systemPrompt: string, userPrompt: string): Promise<
         throw new Error(`AI rankings returned invalid JSON on attempt ${attempt}`);
       }
 
+      logRankings("ai-request", "attempt succeeded", {
+        attempt,
+        maxAttempts: 3,
+        model,
+      });
+
       return json as T;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("AI rankings request failed");
+      logRankingsError("ai-request", lastError, {
+        attempt,
+        maxAttempts: 3,
+        model,
+        willRetry: attempt < 3,
+      });
+
       if (attempt < 3) {
         await sleep(attempt * 1200);
       }
     }
   }
+
+  logRankingsError("ai-request", lastError || new Error("AI rankings request failed after 3 attempts"), {
+    attempt: 3,
+    maxAttempts: 3,
+    model,
+    finalFailure: true,
+  });
 
   throw lastError || new Error("AI rankings request failed after 3 attempts");
 };
@@ -379,82 +430,119 @@ export const generateRankings = async () => {
   const minItems = targetItemCount(Number(process.env.AI_RANKINGS_MIN_ITEMS || 20));
   const { year, month } = getRuntimeDate();
 
-  const [yearlyItems, monthlyItems, dailyItems] = await Promise.all([
-    fillRankingList("yearly", year, month, minItems),
-    fillRankingList("monthly", year, month, minItems),
-    fillRankingList("daily", year, month, minItems),
-  ]);
+  logRankings("pipeline", "generation started", { year, month, minItems });
 
-  const rawLists = {
-    yearly: yearlyItems,
-    monthly: monthlyItems,
-    daily: dailyItems,
-  } satisfies Record<RankingKey, Array<{ query: string; score: number }>>;
+  try {
+    const [yearlyItems, monthlyItems, dailyItems] = await Promise.all([
+      fillRankingList("yearly", year, month, minItems),
+      fillRankingList("monthly", year, month, minItems),
+      fillRankingList("daily", year, month, minItems),
+    ]);
 
-  const allQueries = Array.from(new Set(Object.values(rawLists).flatMap((list) => list.map((item) => item.query))));
-  const blocked = await moderateQueries(allQueries);
-  const filteredLists = Object.fromEntries(
-    Object.entries(rawLists).map(([key, items]) => [
-      key,
-      items.filter((item) => !blocked.has(item.query.trim().toLowerCase())),
-    ]),
-  ) as Record<RankingKey, Array<{ query: string; score: number }>>;
+    logRankings("pipeline", "raw lists generated", {
+      yearly: yearlyItems.length,
+      monthly: monthlyItems.length,
+      daily: dailyItems.length,
+    });
 
-  const baseScoreMap = Object.values(filteredLists)
-    .flat()
-    .reduce<Record<string, number>>((acc, item) => {
-      acc[item.query] = Math.max(acc[item.query] ?? 0, item.score);
-      return acc;
-    }, {});
+    const rawLists = {
+      yearly: yearlyItems,
+      monthly: monthlyItems,
+      daily: dailyItems,
+    } satisfies Record<RankingKey, Array<{ query: string; score: number }>>;
 
-  const uniqueQueries = Object.keys(baseScoreMap);
-  const [normalizedScores, translations] = await Promise.all([
-    unifyScores(uniqueQueries, baseScoreMap),
-    translateQueries(uniqueQueries),
-  ]);
+    const allQueries = Array.from(new Set(Object.values(rawLists).flatMap((list) => list.map((item) => item.query))));
+    const blocked = await moderateQueries(allQueries);
+    logRankings("pipeline", "moderation completed", {
+      totalQueries: allQueries.length,
+      blocked: blocked.size,
+    });
 
-  const generatedAt = new Date().toISOString();
-  const buildBucket = (key: RankingKey): RankingBucket => {
-    const items = filteredLists[key]
-      .map((item) => {
-        const score = normalizedScores.get(item.query) ?? item.score;
-        const titles = translations.get(item.query) || {
-          "zh-CN": item.query,
-          "zh-TW": item.query,
-          en: item.query,
-          ja: item.query,
-          ru: item.query,
-          fr: item.query,
-        };
+    const filteredLists = Object.fromEntries(
+      Object.entries(rawLists).map(([key, items]) => [
+        key,
+        items.filter((item) => !blocked.has(item.query.trim().toLowerCase())),
+      ]),
+    ) as Record<RankingKey, Array<{ query: string; score: number }>>;
 
-        return {
-          id: toId(item.query),
-          query: item.query,
-          score: normalizeScore(score),
-          titles,
-        } satisfies RankingItem;
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, targetItemCount(minItems));
+    const baseScoreMap = Object.values(filteredLists)
+      .flat()
+      .reduce<Record<string, number>>((acc, item) => {
+        acc[item.query] = Math.max(acc[item.query] ?? 0, item.score);
+        return acc;
+      }, {});
 
-    return {
-      key,
-      generatedAt,
-      total: items.length,
-      items,
+    const uniqueQueries = Object.keys(baseScoreMap);
+    const [normalizedScores, translations] = await Promise.all([
+      unifyScores(uniqueQueries, baseScoreMap),
+      translateQueries(uniqueQueries),
+    ]);
+    logRankings("pipeline", "score normalization and translation completed", {
+      uniqueQueries: uniqueQueries.length,
+      normalizedScores: normalizedScores.size,
+      translations: translations.size,
+    });
+
+    const generatedAt = new Date().toISOString();
+    const buildBucket = (key: RankingKey): RankingBucket => {
+      const items = filteredLists[key]
+        .map((item) => {
+          const score = normalizedScores.get(item.query) ?? item.score;
+          const titles = translations.get(item.query) || {
+            "zh-CN": item.query,
+            "zh-TW": item.query,
+            en: item.query,
+            ja: item.query,
+            ru: item.query,
+            fr: item.query,
+          };
+
+          return {
+            id: toId(item.query),
+            query: item.query,
+            score: normalizeScore(score),
+            titles,
+          } satisfies RankingItem;
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, targetItemCount(minItems));
+
+      return {
+        key,
+        generatedAt,
+        total: items.length,
+        items,
+      };
     };
-  };
 
-  return {
-    generatedAt,
-    year,
-    month,
-    rankings: {
-      yearly: buildBucket("yearly"),
-      monthly: buildBucket("monthly"),
-      daily: buildBucket("daily"),
-    },
-  } satisfies RankingDataset;
+    const dataset = {
+      generatedAt,
+      year,
+      month,
+      rankings: {
+        yearly: buildBucket("yearly"),
+        monthly: buildBucket("monthly"),
+        daily: buildBucket("daily"),
+      },
+    } satisfies RankingDataset;
+
+    logRankings("pipeline", "generation finished", {
+      yearly: dataset.rankings.yearly.total,
+      monthly: dataset.rankings.monthly.total,
+      daily: dataset.rankings.daily.total,
+      generatedAt,
+    });
+
+    return dataset;
+  } catch (error) {
+    logRankingsError("pipeline", error, {
+      year,
+      month,
+      minItems,
+      reason: "rankings generation failed",
+    });
+    throw error;
+  }
 };
 
 export const generateAndStoreRankings = async () => {
