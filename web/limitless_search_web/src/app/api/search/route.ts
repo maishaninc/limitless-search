@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       const verifyUrl =
         provider === "turnstile"
           ? "https://challenges.cloudflare.com/turnstile/v0/siteverify"
-          : "https://hcaptcha.com/siteverify";
+          : "https://api.hcaptcha.com/siteverify";
 
       const secret =
         provider === "turnstile"

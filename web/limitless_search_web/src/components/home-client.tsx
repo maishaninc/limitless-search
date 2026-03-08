@@ -16,7 +16,9 @@ declare global {
       render: (el: HTMLElement, options: Record<string, unknown>) => void;
     };
     hcaptcha?: {
-      render: (el: HTMLElement, options: Record<string, unknown>) => void;
+      render: (el: HTMLElement, options: Record<string, unknown>) => string | number;
+      reset: (widgetId?: string | number) => void;
+      remove: (widgetId?: string | number) => void;
     };
   }
 }
@@ -239,6 +241,7 @@ export default function HomeClient() {
   const [captchaLoading, setCaptchaLoading] = useState(false);
   const captchaContainerRef = useRef<HTMLDivElement | null>(null);
   const captchaTokenRef = useRef<string | null>(null);
+  const hcaptchaWidgetRef = useRef<string | number | null>(null);
   const [errorModal, setErrorModal] = useState<ErrorModalState | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -647,11 +650,19 @@ export default function HomeClient() {
       script.src =
         provider === "turnstile"
           ? "https://challenges.cloudflare.com/turnstile/v0/api.js"
-          : "https://js.hcaptcha.com/1/api.js";
+          : "https://js.hcaptcha.com/1/api.js?render=explicit";
       script.onload = () => resolve();
       script.onerror = (e) => reject(e);
       document.body.appendChild(script);
     });
+
+  React.useEffect(() => {
+    return () => {
+      if (window.hcaptcha && hcaptchaWidgetRef.current !== null) {
+        window.hcaptcha.remove(hcaptchaWidgetRef.current);
+      }
+    };
+  }, []);
 
   const renderCaptcha = async () => {
     const provider = CAPTCHA_PROVIDER;
@@ -667,6 +678,7 @@ export default function HomeClient() {
 
       // 清空容器
       captchaContainerRef.current.innerHTML = "";
+      captchaTokenRef.current = null;
 
       if (provider === "turnstile") {
         if (window.turnstile) {
@@ -679,18 +691,25 @@ export default function HomeClient() {
               performSearch(token);
             },
             "error-callback": () => {
+               showErrorModal("Turnstile 验证加载失败，请稍后重试。");
                setCaptchaLoading(false);
-            },
-            "expired-callback": () => {
-               setCaptchaLoading(false);
-            },
+             },
+             "expired-callback": () => {
+               captchaTokenRef.current = null;
+                setCaptchaLoading(false);
+             },
             theme: "auto",
           });
           setCaptchaLoading(false);
         }
       } else if (provider === "hcaptcha") {
         if (window.hcaptcha) {
-          window.hcaptcha.render(captchaContainerRef.current, {
+          if (hcaptchaWidgetRef.current !== null) {
+            window.hcaptcha.remove(hcaptchaWidgetRef.current);
+            hcaptchaWidgetRef.current = null;
+          }
+
+          hcaptchaWidgetRef.current = window.hcaptcha.render(captchaContainerRef.current, {
             sitekey: HCAPTCHA_SITE_KEY,
             callback: (token: string) => {
               console.log("[Captcha] hCaptcha success, token:", token?.slice(0, 10) + "...");
@@ -698,6 +717,17 @@ export default function HomeClient() {
               setShowCaptchaModal(false);
               performSearch(token);
             },
+            "error-callback": () => {
+              captchaTokenRef.current = null;
+              showErrorModal("hCaptcha 验证加载失败，请检查站点密钥、域名配置或稍后重试。");
+              setCaptchaLoading(false);
+            },
+            "expired-callback": () => {
+              captchaTokenRef.current = null;
+              setCaptchaLoading(false);
+            },
+            theme: "light",
+            size: "normal",
           });
           setCaptchaLoading(false);
         }
