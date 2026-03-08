@@ -30,7 +30,7 @@ Limitless Search is a high-performance open-source cloud storage resource search
 
 - Frontend environment variables are now configured in the root `docker-compose.yml` under the `web` service
 - The frontend no longer depends on `web/limitless_search_web/.env` by default
-- The Next.js server-side backend proxy now uses `API_BASE`
+- The frontend now injects the backend address at build time via `NEXT_PUBLIC_API_BASE`
 - Fixed hCaptcha frontend rendering and server-side verification
 
 ## 🌍 Multi-language Support
@@ -78,7 +78,7 @@ docker-compose up -d
 
 4. Access the services:
 - Web Interface: http://localhost:3200
-- Backend API: http://localhost:8888 [Default]
+- Backend API: available only on the internal Docker network by default at `http://backend:8888`; it is not exposed directly to the host
 
 ### View Logs
 
@@ -103,23 +103,19 @@ Update the `web:` service in `docker-compose.yml` directly:
 ```yaml
 web:
   build:
+    context: ./web/limitless_search_web
+    dockerfile: Dockerfile
     args:
-      NEXT_PUBLIC_CAPTCHA_PROVIDER: none
-      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
-      NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
-      NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
-      NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
-      NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
+      - NEXT_PUBLIC_API_BASE=http://backend:8888
+      - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+      - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+      - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+      - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+      - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+      - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
   environment:
-    - API_BASE=http://backend:8888
-    - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-    - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
     - TURNSTILE_SECRET_KEY=
-    - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
     - HCAPTCHA_SECRET_KEY=
-    - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-    - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-    - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
     - AI_SUGGEST_BASE_URL=
     - AI_SUGGEST_MODEL=
     - AI_SUGGEST_API_KEY=
@@ -138,7 +134,7 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `API_BASE` | Backend API URL used by Next.js server routes | `http://backend:8888` |
+| `NEXT_PUBLIC_API_BASE` | Backend API URL embedded at frontend build time | `http://backend:8888` |
 | `NEXT_PUBLIC_CAPTCHA_PROVIDER` | CAPTCHA service provider | `none` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | None |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | None |
@@ -153,6 +149,8 @@ cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 | `AI_SUGGEST_PROMPT` | Custom prompt | Built-in prompt |
 
 > **Note**: For Docker deployments, do not create `web/limitless_search_web/.env`. Only local frontend development needs an optional `web/limitless_search_web/.env.local`.
+
+> **Additional note**: The current root `docker-compose.yml` only publishes port `3200`. The backend `8888` port is reachable only from containers on `limitless-network`. If you need direct host access for backend debugging, add a `ports` mapping to the `backend` service yourself.
 
 ### Docker Deployment Update (Recommended)
 
