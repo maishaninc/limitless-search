@@ -67,6 +67,7 @@ type VerificationResult = {
 const localeList: RankingLocale[] = ["zh-CN", "zh-TW", "en", "ja", "ru", "fr"];
 let generationPromise: Promise<RankingDataset> | null = null;
 let lastGenerationFailureAt = 0;
+let lastCooldownLogAt = 0;
 
 const normalizeScore = (value: number) => {
   if (!Number.isFinite(value)) return 0;
@@ -150,10 +151,14 @@ export const ensureRankingDataset = async (): Promise<RankingDataset | null> => 
   );
 
   if (lastGenerationFailureAt > 0 && Date.now() - lastGenerationFailureAt < cooldownMs) {
-    logRankings("pipeline", "skip auto-generation due to cooldown", {
-      cooldownMs,
-      nextTryInMs: cooldownMs - (Date.now() - lastGenerationFailureAt),
-    });
+    const now = Date.now();
+    if (now - lastCooldownLogAt >= 30000) {
+      lastCooldownLogAt = now;
+      logRankings("pipeline", "skip auto-generation due to cooldown", {
+        cooldownMs,
+        nextTryInMs: cooldownMs - (now - lastGenerationFailureAt),
+      });
+    }
     return null;
   }
 
