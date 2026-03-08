@@ -95,59 +95,51 @@ docker-compose down
 
 ## 🔧 Frontend Environment Configuration
 
-The web frontend requires an environment variable file. If the `web/limitless_search_web/.env` file does not exist, please create it manually.
+Docker deployments no longer require `web/limitless_search_web/.env`. Frontend-related settings are configured in the root `docker-compose.yml` under `web.build.args` and `web.environment`.
 
-### Create Configuration File
+### Docker Deployment Configuration
 
-```bash
-# Enter the frontend directory
-cd web/limitless_search_web
+Update the `web:` service in `docker-compose.yml` directly:
 
-# Create .env file
-touch .env
+```yaml
+web:
+  build:
+    args:
+      NEXT_PUBLIC_CAPTCHA_PROVIDER: none
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
+      NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
+      NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
+      NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
+      NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
+  environment:
+    - API_BASE=http://backend:8888
+    - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+    - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+    - TURNSTILE_SECRET_KEY=
+    - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+    - HCAPTCHA_SECRET_KEY=
+    - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+    - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+    - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+    - AI_SUGGEST_BASE_URL=
+    - AI_SUGGEST_MODEL=
+    - AI_SUGGEST_API_KEY=
+    - AI_SUGGEST_PROMPT=
 ```
 
-### Configuration Content
+### Local Development Only
 
-Edit the `web/limitless_search_web/.env` file and add the following configuration:
+If you run the frontend locally without Docker, copy the example file:
 
-```env
-# Backend API URL
-NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- CAPTCHA Configuration ---
-# Choose verification provider: "turnstile" | "hcaptcha" | "none"
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Cloudflare Turnstile Configuration]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=
-TURNSTILE_SECRET_KEY=
-
-# [hCaptcha Configuration]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
-HCAPTCHA_SECRET_KEY=
-
-# --- AI Original Name Recommendation (OpenAI Compatible API) ---
-# Enable AI recommendation (auto popup when results below threshold, floating tip when results are many)
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-# Result count threshold to trigger AI suggestion (default 50)
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-# OpenAI compatible API endpoint, e.g., https://xxxx.com/v1
-AI_SUGGEST_BASE_URL=
-# OpenAI compatible model name, e.g., gpt-5
-AI_SUGGEST_MODEL=
-# OpenAI compatible API Key (server-side only, do not prefix with NEXT_PUBLIC_)
-AI_SUGGEST_API_KEY=
-# Custom prompt, leave empty to use built-in prompt
-# "Built-in prompt" is in web/limitless_search_web/src/app/api/ai-suggest/route.ts
-AI_SUGGEST_PROMPT=
+```bash
+cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 ```
 
 ### Configuration Reference
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_BASE` | Backend API URL | `http://backend:8888` |
+| `API_BASE` | Backend API URL used by Next.js server routes | `http://backend:8888` |
 | `NEXT_PUBLIC_CAPTCHA_PROVIDER` | CAPTCHA service provider | `none` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | None |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | None |
@@ -155,12 +147,13 @@ AI_SUGGEST_PROMPT=
 | `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | None |
 | `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | Enable AI recommendation | `true` |
 | `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | AI recommendation trigger threshold | `50` |
+| `NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA` | Require CAPTCHA before AI suggestion | `false` |
 | `AI_SUGGEST_BASE_URL` | OpenAI compatible API endpoint | None |
 | `AI_SUGGEST_MODEL` | OpenAI compatible model name | None |
 | `AI_SUGGEST_API_KEY` | OpenAI compatible API Key | None |
 | `AI_SUGGEST_PROMPT` | Custom prompt | Built-in prompt |
 
-> **Note**: If the `.env` file does not exist, the frontend service may not be able to connect to the backend API properly. Please ensure this file is created and configured before starting the service.
+> **Note**: For Docker deployments, do not create `web/limitless_search_web/.env`. Only local frontend development needs an optional `web/limitless_search_web/.env.local`.
 
 ## 🆕 Version Updates
 
@@ -301,7 +294,7 @@ environment:
 └── web/
     └── limitless_search_web/   # Web frontend
         ├── Dockerfile
-        ├── .env                # Environment variables
+        ├── .env.example        # Local development env example
         └── src/                # Source code
 ```
 

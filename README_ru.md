@@ -95,59 +95,51 @@ docker-compose down
 
 ## 🔧 Настройка окружения Frontend
 
-Веб-фронтенд требует файл переменных окружения. Если файл `web/limitless_search_web/.env` не существует, создайте его вручную.
+Docker-развёртывание больше не использует `web/limitless_search_web/.env`. Параметры frontend теперь задаются в корневом `docker-compose.yml` в секциях `web.build.args` и `web.environment`.
 
-### Создание файла конфигурации
+### Настройка Docker-развёртывания
 
-```bash
-# Перейдите в директорию frontend
-cd web/limitless_search_web
+Изменяйте сервис `web:` напрямую в `docker-compose.yml`:
 
-# Создайте файл .env
-touch .env
+```yaml
+web:
+  build:
+    args:
+      NEXT_PUBLIC_CAPTCHA_PROVIDER: none
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
+      NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
+      NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
+      NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
+      NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
+  environment:
+    - API_BASE=http://backend:8888
+    - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+    - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+    - TURNSTILE_SECRET_KEY=
+    - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+    - HCAPTCHA_SECRET_KEY=
+    - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+    - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+    - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+    - AI_SUGGEST_BASE_URL=
+    - AI_SUGGEST_MODEL=
+    - AI_SUGGEST_API_KEY=
+    - AI_SUGGEST_PROMPT=
 ```
 
-### Содержимое конфигурации
+### Только для локальной разработки
 
-Отредактируйте файл `web/limitless_search_web/.env` и добавьте следующую конфигурацию:
+Если вы запускаете frontend локально без Docker, скопируйте пример файла:
 
-```env
-# URL Backend API
-NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- Настройка CAPTCHA ---
-# Выберите провайдера проверки: "turnstile" | "hcaptcha" | "none"
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Настройка Cloudflare Turnstile]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=
-TURNSTILE_SECRET_KEY=
-
-# [Настройка hCaptcha]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
-HCAPTCHA_SECRET_KEY=
-
-# --- AI-рекомендация оригинального названия (OpenAI-совместимый API) ---
-# Включить AI-рекомендации (авто-всплывающее окно при результатах < порога, плавающая подсказка при многих)
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-# Порог количества результатов для срабатывания AI-подсказки (по умолчанию 50)
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-# Конечная точка OpenAI-совместимого API, например: https://xxxx.com/v1
-AI_SUGGEST_BASE_URL=
-# Имя OpenAI-совместимой модели, например: gpt-5
-AI_SUGGEST_MODEL=
-# OpenAI-совместимый API Key (только серверная сторона, не начинайте с NEXT_PUBLIC_)
-AI_SUGGEST_API_KEY=
-# Пользовательский промпт, оставьте пустым для использования встроенного промпта
-# "Встроенный промпт" в web/limitless_search_web/src/app/api/ai-suggest/route.ts
-AI_SUGGEST_PROMPT=
+```bash
+cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 ```
 
 ### Справочник конфигурации
 
 | Переменная | Описание | По умолчанию |
 |------------|----------|--------------|
-| `NEXT_PUBLIC_API_BASE` | URL Backend API | `http://backend:8888` |
+| `API_BASE` | URL backend API, используемый серверными маршрутами Next.js | `http://backend:8888` |
 | `NEXT_PUBLIC_CAPTCHA_PROVIDER` | Провайдер CAPTCHA-сервиса | `none` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | Нет |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | Нет |
@@ -155,12 +147,13 @@ AI_SUGGEST_PROMPT=
 | `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | Нет |
 | `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | Включить AI-рекомендации | `true` |
 | `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | Порог срабатывания AI | `50` |
+| `NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA` | Требовать CAPTCHA перед AI-подсказкой | `false` |
 | `AI_SUGGEST_BASE_URL` | Конечная точка OpenAI API | Нет |
 | `AI_SUGGEST_MODEL` | Имя модели OpenAI | Нет |
 | `AI_SUGGEST_API_KEY` | API Key OpenAI | Нет |
 | `AI_SUGGEST_PROMPT` | Пользовательский промпт | Встроенный промпт |
 
-> **Примечание**: Если файл `.env` не существует, frontend-сервис может не подключиться к backend API. Убедитесь, что этот файл создан и настроен перед запуском сервиса.
+> **Примечание**: Для Docker-развёртывания не создавайте `web/limitless_search_web/.env`. Он нужен только при локальной разработке frontend, и тогда лучше использовать `web/limitless_search_web/.env.local`.
 
 ## 🆕 Обновление версии
 
@@ -301,7 +294,7 @@ environment:
 └── web/
     └── limitless_search_web/   # Веб-фронтенд
         ├── Dockerfile
-        ├── .env                # Переменные окружения
+        ├── .env.example        # Пример переменных для локальной разработки
         └── src/                # Исходный код
 ```
 

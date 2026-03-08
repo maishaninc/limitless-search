@@ -94,59 +94,51 @@ docker-compose down
 
 ## 🔧 前端环境配置
 
-Web 前端需要配置环境变量文件。如果 `web/limitless_search_web/.env` 文件不存在，请手动创建。
+Docker 部署不再依赖 `web/limitless_search_web/.env`。前端相关配置统一写在根目录 `docker-compose.yml` 的 `web.build.args` 和 `web.environment` 中。
 
-### 创建配置文件
+### Docker 部署配置
 
-```bash
-# 进入前端目录
-cd web/limitless_search_web
+可直接在 `docker-compose.yml` 的 `web:` 配置下修改：
 
-# 创建 .env 文件
-touch .env
+```yaml
+web:
+  build:
+    args:
+      NEXT_PUBLIC_CAPTCHA_PROVIDER: none
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
+      NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
+      NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
+      NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
+      NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
+  environment:
+    - API_BASE=http://backend:8888
+    - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+    - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+    - TURNSTILE_SECRET_KEY=
+    - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+    - HCAPTCHA_SECRET_KEY=
+    - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+    - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+    - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+    - AI_SUGGEST_BASE_URL=
+    - AI_SUGGEST_MODEL=
+    - AI_SUGGEST_API_KEY=
+    - AI_SUGGEST_PROMPT=
 ```
 
-### 配置内容
+### 本地开发（可选）
 
-编辑 `web/limitless_search_web/.env` 文件，添加以下配置：
+如果你是本地运行前端而不是走 Docker，可复制示例文件：
 
-```env
-# 后端 API 地址
-NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- 人机验证配置 ---
-# 选择验证服务提供商: "turnstile" | "hcaptcha" | "none"
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Cloudflare Turnstile 配置]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=
-TURNSTILE_SECRET_KEY=
-
-# [hCaptcha 配置]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
-HCAPTCHA_SECRET_KEY=
-
-# --- AI 原版名称推荐（遵循 OpenAI 兼容接口）---
-# 是否启用 AI 推荐（搜索结果少于阈值时自动弹窗，结果多时显示悬浮提示）
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-# 触发 AI 提示的结果数量阈值（默认 50）
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-# OpenAI 兼容接口地址，例如 https://xxxx.com/v1
-AI_SUGGEST_BASE_URL=
-# OpenAI 兼容模型名称，例如 gpt-5
-AI_SUGGEST_MODEL=
-# OpenAI 兼容 API Key（仅服务端使用，不要以 NEXT_PUBLIC_ 开头）
-AI_SUGGEST_API_KEY=
-# 自定义提示词，可留空使用内置提示词 
-# "内置提示词"在 web/limitless_search_web/src/app/api/ai-suggest/route.ts
-AI_SUGGEST_PROMPT=
+```bash
+cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 ```
 
 ### 配置说明
 
 | 环境变量 | 描述 | 默认值 |
 |----------|------|--------|
-| `NEXT_PUBLIC_API_BASE` | 后端 API 地址 | `http://backend:8888` |
+| `API_BASE` | Next.js 服务端路由访问后端 API 的地址 | `http://backend:8888` |
 | `NEXT_PUBLIC_CAPTCHA_PROVIDER` | 人机验证服务提供商 | `none` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | 无 |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | 无 |
@@ -154,12 +146,13 @@ AI_SUGGEST_PROMPT=
 | `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | 无 |
 | `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | 是否启用 AI 推荐 | `true` |
 | `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | AI 推荐触发阈值 | `50` |
+| `NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA` | AI 推荐是否要求先完成人机验证 | `false` |
 | `AI_SUGGEST_BASE_URL` | OpenAI 兼容接口地址 | 无 |
 | `AI_SUGGEST_MODEL` | OpenAI 兼容模型名称 | 无 |
 | `AI_SUGGEST_API_KEY` | OpenAI 兼容 API Key | 无 |
 | `AI_SUGGEST_PROMPT` | 自定义提示词 | 内置提示词 |
 
-> **注意**：如果 `.env` 文件不存在，前端服务可能无法正常连接后端 API。请确保在启动服务前创建并配置此文件。
+> **注意**：Docker 部署时无需创建 `web/limitless_search_web/.env`。只有在本地开发前端时，才需要按需创建 `web/limitless_search_web/.env.local`。
 
 ## 🆕 版本更新
 
@@ -300,7 +293,7 @@ environment:
 └── web/
     └── limitless_search_web/   # Web 前端
         ├── Dockerfile
-        ├── .env                # 环境变量配置
+        ├── .env.example        # 本地开发环境变量示例
         └── src/                # 源代码
 ```
 

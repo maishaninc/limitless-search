@@ -95,59 +95,51 @@ docker-compose down
 
 ## 🔧 フロントエンド環境設定
 
-Webフロントエンドには環境変数ファイルの設定が必要です。`web/limitless_search_web/.env` ファイルが存在しない場合は、手動で作成してください。
+Docker デプロイでは `web/limitless_search_web/.env` は不要です。フロントエンド関連の設定は、ルートの `docker-compose.yml` にある `web.build.args` と `web.environment` で管理します。
 
-### 設定ファイルの作成
+### Docker デプロイ設定
 
-```bash
-# フロントエンドディレクトリに移動
-cd web/limitless_search_web
+`docker-compose.yml` の `web:` サービスで直接設定します：
 
-# .envファイルを作成
-touch .env
+```yaml
+web:
+  build:
+    args:
+      NEXT_PUBLIC_CAPTCHA_PROVIDER: none
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
+      NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
+      NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
+      NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
+      NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
+  environment:
+    - API_BASE=http://backend:8888
+    - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+    - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+    - TURNSTILE_SECRET_KEY=
+    - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+    - HCAPTCHA_SECRET_KEY=
+    - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+    - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+    - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+    - AI_SUGGEST_BASE_URL=
+    - AI_SUGGEST_MODEL=
+    - AI_SUGGEST_API_KEY=
+    - AI_SUGGEST_PROMPT=
 ```
 
-### 設定内容
+### ローカル開発のみ（任意）
 
-`web/limitless_search_web/.env` ファイルを編集し、以下の設定を追加：
+Docker を使わずにフロントエンドをローカル実行する場合のみ、サンプルをコピーします：
 
-```env
-# バックエンドAPI URL
-NEXT_PUBLIC_API_BASE=http://backend:8888
-
-# --- CAPTCHA設定 ---
-# 認証プロバイダーを選択: "turnstile" | "hcaptcha" | "none"
-NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-
-# [Cloudflare Turnstile設定]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=
-TURNSTILE_SECRET_KEY=
-
-# [hCaptcha設定]
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
-HCAPTCHA_SECRET_KEY=
-
-# --- AIオリジナル名レコメンデーション（OpenAI互換API）---
-# AIレコメンデーションを有効にする（結果が閾値未満の場合は自動ポップアップ、多い場合はフローティングヒント）
-NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-# AIヒントをトリガーする結果数の閾値（デフォルト50）
-NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-# OpenAI互換APIエンドポイント、例：https://xxxx.com/v1
-AI_SUGGEST_BASE_URL=
-# OpenAI互換モデル名、例：gpt-5
-AI_SUGGEST_MODEL=
-# OpenAI互換API Key（サーバーサイドのみ、NEXT_PUBLIC_で始めないでください）
-AI_SUGGEST_API_KEY=
-# カスタムプロンプト、空のままで内蔵プロンプトを使用
-# "内蔵プロンプト"は web/limitless_search_web/src/app/api/ai-suggest/route.ts にあります
-AI_SUGGEST_PROMPT=
+```bash
+cp web/limitless_search_web/.env.example web/limitless_search_web/.env.local
 ```
 
 ### 設定リファレンス
 
 | 変数 | 説明 | デフォルト |
 |------|------|-----------|
-| `NEXT_PUBLIC_API_BASE` | バックエンドAPI URL | `http://backend:8888` |
+| `API_BASE` | Next.js サーバールートが使うバックエンド API URL | `http://backend:8888` |
 | `NEXT_PUBLIC_CAPTCHA_PROVIDER` | CAPTCHAサービスプロバイダー | `none` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | なし |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | なし |
@@ -155,12 +147,13 @@ AI_SUGGEST_PROMPT=
 | `HCAPTCHA_SECRET_KEY` | hCaptcha Secret Key | なし |
 | `NEXT_PUBLIC_AI_SUGGEST_ENABLED` | AIレコメンデーションを有効にする | `true` |
 | `NEXT_PUBLIC_AI_SUGGEST_THRESHOLD` | AIレコメンデーショントリガー閾値 | `50` |
+| `NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA` | AI提案の前に CAPTCHA を必須にする | `false` |
 | `AI_SUGGEST_BASE_URL` | OpenAI互換APIエンドポイント | なし |
 | `AI_SUGGEST_MODEL` | OpenAI互換モデル名 | なし |
 | `AI_SUGGEST_API_KEY` | OpenAI互換API Key | なし |
 | `AI_SUGGEST_PROMPT` | カスタムプロンプト | 内蔵プロンプト |
 
-> **注意**：`.env` ファイルが存在しない場合、フロントエンドサービスがバックエンドAPIに正常に接続できない可能性があります。サービスを起動する前に、このファイルを作成して設定してください。
+> **注意**：Docker デプロイでは `web/limitless_search_web/.env` を作成しないでください。ローカル開発時のみ、必要に応じて `web/limitless_search_web/.env.local` を作成してください。
 
 ## 🆕 バージョン更新
 
@@ -301,7 +294,7 @@ environment:
 └── web/
     └── limitless_search_web/   # Webフロントエンド
         ├── Dockerfile
-        ├── .env                # 環境変数
+        ├── .env.example        # ローカル開発用の環境変数サンプル
         └── src/                # ソースコード
 ```
 

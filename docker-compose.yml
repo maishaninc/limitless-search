@@ -49,6 +49,13 @@ services:
     build:
       context: ./web/limitless_search_web
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CAPTCHA_PROVIDER: none
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ""
+        NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ""
+        NEXT_PUBLIC_AI_SUGGEST_ENABLED: "true"
+        NEXT_PUBLIC_AI_SUGGEST_THRESHOLD: "50"
+        NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA: "false"
     image: limitless-search-web:local
     container_name: limitless-search-web
     pull_policy: never
@@ -58,11 +65,25 @@ services:
     ports:
       - "3200:3200"
     environment:
-      # 后端 API 地址（容器内指向 backend 别名）
-      - NEXT_PUBLIC_API_BASE=http://backend:8888
-      
-      # 人机验证配置已迁移至 web/limitless_search_web/src/config/captcha.ts
-      
+      # 服务端路由访问后端 API 的地址（容器内指向 backend 别名）
+      - API_BASE=http://backend:8888
+
+      # 人机验证配置
+      # 可选值: turnstile | hcaptcha | none
+      - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+      - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+      - TURNSTILE_SECRET_KEY=
+      - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+      - HCAPTCHA_SECRET_KEY=
+
+      # AI 原版名称推荐（OpenAI 兼容接口）
+      - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+      - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+      - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+      - AI_SUGGEST_BASE_URL=
+      - AI_SUGGEST_MODEL=
+      - AI_SUGGEST_API_KEY=
+      - AI_SUGGEST_PROMPT=
     networks:
       - limitless-network
 

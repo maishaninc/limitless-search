@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const UPSTREAM_BASE =
-  process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") || "http://backend:8888";
+  process.env.API_BASE?.replace(/\/$/, "") ||
+  process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ||
+  "http://backend:8888";
 
 const safeJsonParse = (input: string) => {
   try {
