@@ -3,7 +3,7 @@ import path from "path";
 import { rankingsEnabled } from "@/lib/rankings-config";
 
 export type RankingLocale = "zh-CN" | "zh-TW" | "en" | "ja" | "ru" | "fr";
-export type RankingKey = "yearly" | "monthly" | "daily" | "bili_rank" | "bili_hot" | "bili_schedule";
+export type RankingKey = "yearly" | "monthly" | "daily" | "bili_rank";
 type AiRankingKey = "yearly" | "monthly" | "daily";
 
 export type RankingTitles = Record<RankingLocale, string>;
@@ -497,23 +497,11 @@ const fetchBiliRankings = async (minItems: number) => {
   const rankPageUrl =
     process.env.AI_RANKINGS_BILIBILI_RANK_PAGE_URL ||
     "https://www.bilibili.com/v/popular/rank/anime";
-  const scheduleUrl =
-    process.env.AI_RANKINGS_BILIBILI_SCHEDULE_URL ||
-    "https://api.bilibili.com/pgc/web/timeline/v2";
-  const scheduleAltUrl =
-    process.env.AI_RANKINGS_BILIBILI_SCHEDULE_ALT_URL ||
-    "https://api.bilibili.com/pgc/web/timeline?types=1";
-  const animePageUrl =
-    process.env.AI_RANKINGS_BILIBILI_ANIME_PAGE_URL ||
-    "https://www.bilibili.com/anime";
-  const hotBangumiUrl =
-    process.env.AI_RANKINGS_BILIBILI_HOT_URL ||
-    "https://api.bilibili.com/pgc/web/rank/list?season_type=1&day=3";
   const userAgent =
     process.env.AI_RANKINGS_BILIBILI_USER_AGENT ||
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
 
-  const [rankResp, rankRegionResp, rankPageResp, scheduleResp, scheduleAltResp, hotResp, animePageResp] = await Promise.all([
+  const [rankResp, rankRegionResp, rankPageResp] = await Promise.all([
     fetch(rankUrl, {
       headers: {
         "user-agent": userAgent,
@@ -534,42 +522,11 @@ const fetchBiliRankings = async (minItems: number) => {
       },
       cache: "no-store",
     }),
-    fetch(scheduleUrl, {
-      headers: {
-        "user-agent": userAgent,
-        referer: "https://www.bilibili.com/anime",
-      },
-      cache: "no-store",
-    }),
-    fetch(scheduleAltUrl, {
-      headers: {
-        "user-agent": userAgent,
-        referer: "https://www.bilibili.com/anime",
-      },
-      cache: "no-store",
-    }),
-    fetch(hotBangumiUrl, {
-      headers: {
-        "user-agent": userAgent,
-        referer: "https://www.bilibili.com/anime",
-      },
-      cache: "no-store",
-    }),
-    fetch(animePageUrl, {
-      headers: {
-        "user-agent": userAgent,
-      },
-      cache: "no-store",
-    }),
   ]);
 
   const rankJson = rankResp.ok ? ((await rankResp.json()) as any) : null;
   const rankRegionJson = rankRegionResp.ok ? ((await rankRegionResp.json()) as any) : null;
-  const scheduleJson = scheduleResp.ok ? ((await scheduleResp.json()) as any) : null;
-  const scheduleAltJson = scheduleAltResp.ok ? ((await scheduleAltResp.json()) as any) : null;
-  const hotJson = hotResp.ok ? ((await hotResp.json()) as any) : null;
   const rankPageHtml = rankPageResp.ok ? await rankPageResp.text() : "";
-  const animePageHtml = animePageResp.ok ? await animePageResp.text() : "";
 
   const parseTitlesFromHtml = (html: string, pattern: RegExp, limit = 200) => {
     const titles: string[] = [];
@@ -674,52 +631,6 @@ const fetchBiliRankings = async (minItems: number) => {
 
   const rankMerged = [...rankItems, ...rankTitlesFromPage];
 
-  const biliHotItems = extractTitleItems(
-    hotJson?.result?.list || hotJson?.data?.list || hotJson,
-    (entry, idx) => Number(entry?.stat?.follow || entry?.follows || 200 - idx),
-    "https://www.bilibili.com/anime",
-  );
-
-  const hotTitlesFromPage = parseTitlesFromHtml(animePageHtml, /"season_title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g, 120)
-    .map((title, idx) => mapRankItem(title, toBiliScore(120 - idx, 120), { sourceUrl: "https://www.bilibili.com/anime" }));
-
-  const hotMerged = [...biliHotItems, ...hotTitlesFromPage];
-
-  const scheduleRaw = [
-    ...(extractTitleItems(scheduleJson?.result?.latest || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
-    ...(extractTitleItems(scheduleJson?.result?.timeline || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
-    ...(extractTitleItems(scheduleAltJson?.result?.latest || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
-    ...(extractTitleItems(scheduleAltJson?.result?.timeline || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
-    ...(extractTitleItems(scheduleJson?.result?.timeline || scheduleJson?.data || [], (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true) || []),
-  ];
-
-  const animeState =
-    animePageHtml.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\//)?.[1] ||
-    animePageHtml.match(/__INITIAL_STATE__=(\{[\s\S]*?\});/)?.[1];
-  const animeParsed = animeState ? (safeJsonParse(animeState) as any) : null;
-  const animeScheduleFallback = (animeParsed?.timeline?.latest || animeParsed?.timeline?.items || []) as any[];
-
-  const biliScheduleItems = [
-    ...scheduleRaw,
-    ...extractTitleItems(animeScheduleFallback, (_entry, idx) => 200 - idx, "https://www.bilibili.com/anime", true),
-  ];
-
-  const scheduleTitleMatches = animePageHtml.matchAll(/"pub_index_show"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"[\s\S]*?"season_title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g);
-  const scheduleFromPage = Array.from(scheduleTitleMatches)
-    .slice(0, 120)
-    .map((entry, idx) => {
-      const display = decodeEscapedText((entry[1] || "").trim());
-      const title = decodeEscapedText((entry[2] || "").trim());
-      if (!title) return null;
-      return mapRankItem(title, toBiliScore(120 - idx, 120), {
-        displayTime: display,
-        sourceUrl: "https://www.bilibili.com/anime",
-      });
-    })
-    .filter(Boolean) as RankingItem[];
-
-  const scheduleMerged = [...biliScheduleItems, ...scheduleFromPage];
-
   const dedup = (items: RankingItem[]) => {
     const map = new Map<string, RankingItem>();
     for (const item of items) {
@@ -733,22 +644,14 @@ const fetchBiliRankings = async (minItems: number) => {
   };
 
   const rank = dedup(rankMerged);
-  const hot = dedup(hotMerged);
-  const schedule = dedup(scheduleMerged);
 
   logRankings("bilibili", "fetched ranking sources", {
     rank: rank.length,
-    hot: hot.length,
-    schedule: schedule.length,
     rankApiOk: rankResp.ok,
-    hotApiOk: hotResp.ok,
-    scheduleApiOk: scheduleResp.ok,
   });
 
   return {
     rank,
-    hot,
-    schedule,
   };
 };
 
@@ -1030,10 +933,8 @@ export const generateRankings = async () => {
       daily: dailyVerified,
     } satisfies Record<AiRankingKey, Array<{ query: string; score: number }>>;
 
-    let biliData: { rank: RankingItem[]; hot: RankingItem[]; schedule: RankingItem[] } = {
+    let biliData: { rank: RankingItem[] } = {
       rank: [],
-      hot: [],
-      schedule: [],
     };
 
     try {
@@ -1146,18 +1047,6 @@ export const generateRankings = async () => {
           total: biliData.rank.length,
           items: biliData.rank,
         },
-        bili_hot: {
-          key: "bili_hot",
-          generatedAt,
-          total: biliData.hot.length,
-          items: biliData.hot,
-        },
-        bili_schedule: {
-          key: "bili_schedule",
-          generatedAt,
-          total: biliData.schedule.length,
-          items: biliData.schedule,
-        },
       },
     } satisfies RankingDataset;
 
@@ -1166,8 +1055,6 @@ export const generateRankings = async () => {
       monthly: dataset.rankings.monthly.total,
       daily: dataset.rankings.daily.total,
       biliRank: dataset.rankings.bili_rank.total,
-      biliHot: dataset.rankings.bili_hot.total,
-      biliSchedule: dataset.rankings.bili_schedule.total,
       generatedAt,
     });
 
@@ -1180,10 +1067,8 @@ export const generateRankings = async () => {
       reason: "rankings generation failed",
     });
 
-    let biliData: { rank: RankingItem[]; hot: RankingItem[]; schedule: RankingItem[] } = {
+    let biliData: { rank: RankingItem[] } = {
       rank: [],
-      hot: [],
-      schedule: [],
     };
 
     try {
@@ -1204,8 +1089,6 @@ export const generateRankings = async () => {
         monthly: { key: "monthly", generatedAt, total: 0, items: [] },
         daily: { key: "daily", generatedAt, total: 0, items: [] },
         bili_rank: { key: "bili_rank", generatedAt, total: biliData.rank.length, items: biliData.rank },
-        bili_hot: { key: "bili_hot", generatedAt, total: biliData.hot.length, items: biliData.hot },
-        bili_schedule: { key: "bili_schedule", generatedAt, total: biliData.schedule.length, items: biliData.schedule },
       },
     } satisfies RankingDataset;
 
