@@ -1,19 +1,39 @@
-﻿
-
 services:
-  backend:
+  limitless-search:
     build:
-      context: ./backend/limitless_search
+      context: .
       dockerfile: Dockerfile
-    image: limitless-search-backend:local
-    container_name: limitless-search-backend
-    pull_policy: never  
+      args:
+        # 构建时环境变量 (NEXT_PUBLIC_* 需要在构建时嵌入)
+        # 后端 API 地址（单容器内指向同容器后端）
+        - NEXT_PUBLIC_API_BASE=http://127.0.0.1:8888
+        # 人机验证配置: "turnstile" | "hcaptcha" | "none"
+        - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
+        # Cloudflare Turnstile Site Key
+        - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+        # hCaptcha Site Key
+        - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
+        # AI 原版名称推荐开关 : "true" | "false"
+        - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
+        # 触发 AI 提示的结果数量阈值（默认 50）
+        - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
+        # AI 推荐是否需要先完成人机验证 : "true" | "false"
+        - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
+        # AI 排行榜前端显示开关: true=导航栏显示“排行榜”入口，false=前端完全隐藏入口
+        - NEXT_PUBLIC_AI_RANKINGS_ENABLED=false
+    image: limitless-search:local
+    container_name: limitless-search
+    pull_policy: never
     restart: unless-stopped
+    ports:
+      - "3200:3200"
     expose:
-      - "8888" # 后端监听端口 不开放到主机公网只能在 limitless-network 网络中访问
+      - "8888" # 后端监听端口，不开放到主机公网，只在容器内部/同网络内访问
     environment:
       # 后端监听端口
-      - PORT=8888       
+      - PORT=8888
+      # 前端监听端口
+      - WEB_PORT=3200
       - CHANNELS=tgsearchers4,Aliyun_4K_Movies,bdbdndn11,yunpanx,bsbdbfjfjff,yp123pan,sbsbsnsqq,yunpanxunlei,tianyifc,BaiduCloudDisk,txtyzy,peccxinpd,gotopan,PanjClub,kkxlzy,baicaoZY,MCPH01,MCPH02,MCPH03,bdwpzhpd,ysxb48,jdjdn1111,yggpan,MCPH086,zaihuayun,Q66Share,ucwpzy,shareAliyun,alyp_1,dianyingshare,Quark_Movies,XiangxiuNBB,ydypzyfx,ucquark,xx123pan,yingshifenxiang123,zyfb123,tyypzhpd,tianyirigeng,cloudtianyi,hdhhd21,Lsp115,oneonefivewpfx,qixingzhenren,taoxgzy,Channel_Shares_115,tyysypzypd,vip115hot,wp123zy,yunpan139,yunpan189,yunpanuc,yydf_hzl,leoziyuan,pikpakpan,Q_dongman,yoyokuakeduanju,TG654TG,WFYSFX02,QukanMovie,yeqingjie_GJG666,movielover8888_film3,Baidu_netdisk,D_wusun,FLMdongtianfudi,KaiPanshare,QQZYDAPP,rjyxfx,PikPak_Share_Channel,btzhi,newproductsourcing,cctv1211,duan_ju,QuarkFree,yunpanNB,kkdj001,xxzlzn,pxyunpanxunlei,jxwpzy,kuakedongman,liangxingzhinan,xiangnikanj,solidsexydoll,guoman4K,zdqxm,kduanju,cilidianying,CBduanju,SharePanFilms,dzsgx,BooksRealm,Oscar_4Kmovies,douerpan,baidu_yppan,Q_jilupian,Netdisk_Movies,yunpanquark,ammmziyuan,ciliziyuanku,cili8888,jzmm_123pan,gdsharing,dmhy_org,
       - ENABLED_PLUGINS=labi,zhizhen,shandian,duoduo,muou,wanou,hunhepan,jikepan,panwiki,pansearch,panta,qupansou,hdr4k,pan666,susu,thepiratebay,xuexizhinan,panyq,ouge,huban,cyg,erxiao,miaoso,fox4k,pianku,clmao,wuji,cldi,xiaozhang,libvio,leijing,xb6v,xys,ddys,hdmoli,yuhuage,u3c3,clxiong,jutoushe,sdso,xiaoji,xdyh,haisou,bixin,djgou,nyaa,xinjuc,aikanzy,qupanshe,xdpan,discourse,yunsou,qqpd,ahhhhfs,nsgame,gying,quark4k,quarksoo,sousou,ash
       - CACHE_ENABLED=true
@@ -32,53 +52,9 @@ services:
       # - AUTH_JWT_SECRET=your-secret-key-here
       # Proxy (optional)
       # - PROXY=socks5://proxy:7897
-    volumes:
-      - limitless-search:/app/cache
-    networks:
-      limitless-network:
-        aliases:
-          - backend
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8888/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-
-  web:
-    build:
-      context: ./web/limitless_search_web
-      dockerfile: Dockerfile
-      args:
-        # 构建时环境变量 (NEXT_PUBLIC_* 需要在构建时嵌入)
-        # 后端 API 地址（容器内指向 backend 别名）
-        - NEXT_PUBLIC_API_BASE=http://backend:8888
-        # 人机验证配置: "turnstile" | "hcaptcha" | "none"
-        - NEXT_PUBLIC_CAPTCHA_PROVIDER=none
-        # Cloudflare Turnstile Site Key
-        - NEXT_PUBLIC_TURNSTILE_SITE_KEY=
-        # hCaptcha Site Key
-        - NEXT_PUBLIC_HCAPTCHA_SITE_KEY=
-        # AI 原版名称推荐开关 : "true" | "false"
-        - NEXT_PUBLIC_AI_SUGGEST_ENABLED=true
-        # 触发 AI 提示的结果数量阈值（默认 50）
-        - NEXT_PUBLIC_AI_SUGGEST_THRESHOLD=50
-        # AI 推荐是否需要先完成人机验证 : "true" | "false"
-        - NEXT_PUBLIC_AI_SUGGEST_REQUIRE_CAPTCHA=false
-        # AI 排行榜前端显示开关: true=导航栏显示“排行榜”入口，false=前端完全隐藏入口
-        - NEXT_PUBLIC_AI_RANKINGS_ENABLED=false
-    image: limitless-search-web:local
-    container_name: limitless-search-web
-    pull_policy: never
-    restart: unless-stopped
-    depends_on:
-      - backend
-    ports:
-      - "3200:3200"
-    volumes:
-      - limitless-search-web-data:/app/data
-    environment:
       # 运行时环境变量 (服务端使用，不暴露给客户端)
+      # 单容器内 Next API 代理到同容器 Go 后端
+      - NEXT_PUBLIC_API_BASE=http://127.0.0.1:8888
       # Cloudflare Turnstile Secret Key
       - TURNSTILE_SECRET_KEY=
       # hCaptcha Secret Key
@@ -129,8 +105,21 @@ services:
       - AI_RANKINGS_PROMPT_SCORE=你是动漫榜单统一评分器。只输出一个合法 JSON 对象，禁止 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文名","score":85.2}]}。要求同名作品在年榜/月榜/日榜分数一致，score 为 0-100 数值。
       # 榜单校验提示词：用于过滤错误条目并保证日榜为已上映/在播内容
       - AI_RANKINGS_PROMPT_VERIFY=你是动漫榜单质量审核器。必须只输出一个合法 JSON 对象，不要输出 markdown、代码块、解释文字。输出格式必须严格为 {"items":[{"query":"中文动漫名","score":88.5}],"removed":["被移除条目"]}。审核规则：1) 只保留真实存在的动漫作品；2) 删除非动漫、重复、低置信度、歧义严重条目；3) daily 当日热榜必须只保留已上映/在播/当前可观看作品，删除纯未来未开播作品；4) monthly 当月新番优先当月相关上新与在播新番；5) yearly 年度预告允许未上映，但必须是当年高关注且信息可信；6) query 优先简体中文名称；7) score 必须为 0-100 数值；8) 若删除后不足，不要编造，保留高置信条目并写入 removed。
+    volumes:
+      - limitless-search:/app/cache
+      - limitless-search-web-data:/app/data
     networks:
-      - limitless-network
+      limitless-network:
+        aliases:
+          - backend
+          - web
+          - limitless-search
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8888/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   limitless-search:
