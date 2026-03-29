@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { importGeneratedRankingDataset, restorePublishedRankingDataset } from "@/lib/admin-rankings";
 import { generateAndStoreRankings } from "@/lib/rankings";
 import { rankingsEnabled } from "@/lib/rankings-config";
 
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const dataset = await generateAndStoreRankings();
+    await importGeneratedRankingDataset(dataset);
+    await restorePublishedRankingDataset();
     return NextResponse.json({ ok: true, generatedAt: dataset.generatedAt, totals: Object.fromEntries(Object.entries(dataset.rankings).map(([key, value]) => [key, value.total])) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to sync rankings";

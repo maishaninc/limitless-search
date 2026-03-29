@@ -75,6 +75,8 @@ services:
       - backend
     ports:
       - "3200:3200"
+    volumes:
+      - limitless-search-web-data:/app/data
     environment:
       # 运行时环境变量 (服务端使用，不暴露给客户端)
       # Cloudflare Turnstile Secret Key
@@ -109,6 +111,8 @@ services:
       - AI_RANKINGS_MIN_ITEMS=20
       # AI 排行榜数据落盘目录
       - AI_RANKINGS_DATA_DIR=/app/data/rankings
+      # 后台管理员与榜单版本 SQLite 数据目录
+      - ADMIN_DATA_DIR=/app/data/admin
       # 触发 /api/rankings/sync 的鉴权令牌，务必修改
       - AI_RANKINGS_SYNC_TOKEN=change-this-token
       # 年榜提示词：要求输出 JSON { items: [{ query, score }] }
@@ -131,6 +135,8 @@ services:
 volumes:
   limitless-search:
     name: limitless-search
+  limitless-search-web-data:
+    name: limitless-search-web-data
 
 networks:
   limitless-network:

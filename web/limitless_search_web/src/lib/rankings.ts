@@ -613,8 +613,16 @@ const fetchBiliRankings = async (minItems: number) => {
   };
 
   const rankItems = [
-    ...extractTitleItems(rankJson?.data?.list || rankJson?.data || [], (entry) => Number(entry?.stat?.view || entry?.play || 0), "https://www.bilibili.com/v/popular/rank/anime"),
-    ...extractTitleItems(rankRegionJson?.data?.list || rankRegionJson?.data || [], (entry) => Number(entry?.stat?.view || entry?.play || 0), "https://www.bilibili.com/v/popular/rank/anime"),
+    ...extractTitleItems(
+      rankJson?.data?.list || rankJson?.data || [],
+      (entry) => Number((entry.stat as { view?: unknown } | undefined)?.view || entry.play || 0),
+      "https://www.bilibili.com/v/popular/rank/anime",
+    ),
+    ...extractTitleItems(
+      rankRegionJson?.data?.list || rankRegionJson?.data || [],
+      (entry) => Number((entry.stat as { view?: unknown } | undefined)?.view || entry.play || 0),
+      "https://www.bilibili.com/v/popular/rank/anime",
+    ),
     ...extractTitleItems(parsePageItems(rankPageHtml), (_entry, idx) => 200 - idx, "https://www.bilibili.com/v/popular/rank/anime"),
   ];
 
