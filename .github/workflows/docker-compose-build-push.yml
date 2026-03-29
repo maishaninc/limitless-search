@@ -1,0 +1,46 @@
+name: Build and Push Docker Image
+
+# 触发条件：当推送到 main 分支或创建标签时执行
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]  # 匹配类似 v1.0.0 的标签
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest  # 使用 Ubuntu 环境
+    steps:
+      # 步骤 1：拉取 GitHub 仓库代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 步骤 2：设置 Docker 构建环境
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 步骤 3：登录 Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # 步骤 4：提取镜像标签（支持分支和标签触发）
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/limitless-search  # 替换为你的 Docker Hub 仓库名
+          tags: |
+            type=ref,event=branch  # 分支触发时，标签为分支名（如 main）
+            type=semver,pattern={{version}}  # 标签触发时，标签为版本号（如 v1.0.0 → 1.0.0）
+            type=semver,pattern={{major}}.{{minor}}  # 标签触发时，额外添加主版本标签（如 1.0）
+
+      # 步骤 5：构建并推送 Docker 镜像
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .  # Dockerfile 所在目录（当前目录）
+          push: true  # 推送镜像到 Docker Hub
+          tags: ${{ steps.meta.outputs.tags }}  # 使用步骤 4 生成的标签
+          labels: ${{ steps.meta.outputs.labels }}  # 附加元数据标签
