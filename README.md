@@ -1,4 +1,6 @@
-# 无线搜索
+# 无线搜索  此仓库已经废弃 为历史遗留版本 请前往组织Maishan-Inc 
+
+**新版本开发中暂时请勿使用**[Maishan-Inc/Limitless-search](https://github.com/Maishan-Inc/Limitless-search)
 
 **简体中文** | [繁體中文](README_zh-TW.md) | [English](README_en.md) | [日本語](README_ja.md) | [Русский](README_ru.md) | [Français](README_fr.md)
 
