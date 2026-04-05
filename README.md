@@ -2,6 +2,8 @@
 
 **新版本开发中暂时请勿使用**[Maishan-Inc/Limitless-search](https://github.com/Maishan-Inc/Limitless-search)
 
+**友链** [linux.do](https://linux.do)
+
 **简体中文** | [繁體中文](README_zh-TW.md) | [English](README_en.md) | [日本語](README_ja.md) | [Русский](README_ru.md) | [Français](README_fr.md)
 
 无线搜索 是一个高性能的开源网盘资源搜索工具，由Freeanime.org与Maishan Inc开发。
